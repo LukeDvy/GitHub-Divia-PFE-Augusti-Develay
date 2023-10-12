@@ -1,0 +1,58 @@
+route_id,agency_id,route_short_name,route_long_name,route_type
+4-10,KD,10,TALANT Citadelle <> AHUY,3
+4-12,KD,12,PLOMBIERES <> P. de Colombiere,3
+4-13,KD,13,Motte Giron <> FONTAINE Village,3
+4-14,KD,14,MARSANNAY Charon <> Carraz,3
+4-15,KD,15,PERRIGNY <> Carraz,3
+4-16,KD,16,QUETIGNY AC <> NEUILLY-CRIMOLOIS,3
+4-18,KD,18,LONGVIC Carmelites <> Darcy,3
+4-19,KD,19,ST-APO. Pre Thomas <> Gresilles,3
+4-30,KD,30,HAUTEVILLE <> DARCY,3
+4-31,KD,31,LONGVIC Centre <> BRETENIERE,3
+4-32,KD,32,LONGVIC Centre <> FENAY,3
+4-33,KD,33,FLAVIGNEROT <> Monge CIGV,3
+4-34,KD,34,Sainte-Anne <> Monge CIGV,3
+4-35,KD,35,Montagne de Larrey <> Monge CIGV,3
+4-36,KD,36,BRESSEY <> QUETIGNY Grand Marche,3
+4-37,KD,37,MAGNY <> QUETIGNY Grand Marche,3
+4-38,KD,38,Gare SNCF <> Ec. de Gendarmerie,3
+4-39,KD,39,Fontaine d'Ouche <> Tulipes,3
+4-40,KD,40,Toison d'Or <> Republique,3
+4-41,KD,41,CHEVIGNY Z.I. <> Grand Marche,3
+4-42,KD,42,Les Ateliers <> CHENOVE C. Cial,3
+4-43,KD,43,Gresilles <> Ecoparc Dijon Bourg,3
+4-44,KD,44,LONGVIC Centre <> ZI BEAUREGARD,3
+4-45,KD,45,CEM <> CARRAZ <> ZI,3
+4-61,KD,61,FENAY <> College Dorgeles,3
+4-62,KD,62,FENAY <> Lycee H. Fontaine,3
+4-63,KD,63,BRETENIERE <> College Dorgeles,3
+4-64,KD,64,BRESSEY <> L.Boivin / C. Rostand,3
+4-65,KD,65,HAUTEVILLE-DAIX <> College Vian,3
+4-66,KD,66,NEUILLY <> College Dorgeles,3
+4-67,KD,67,CRIMOLOIS-SENNECEY <> 30 Octobre,3
+4-68,KD,68,BRETENIERE <> Lycee H. Fontaine,3
+4-69,KD,69,CRIMOLOIS-SENNECEY <> L. Boivin,3
+4-70,KD,70,PLOMBIERES <> College Rameau,3
+4-71,KD,71,Roosevelt <> College Malraux,3
+4-72,KD,72,MAGNY <> Lycee Boivin,3
+4-73,KD,73,QUETIGNY A. C. > Lycee Boivin,3
+4-74,KD,74,ST-APO Pre Thomas <>L. Le Castel,3
+4-75,KD,75,FLAVIGNEROT <> College Dunant,3
+4-89,KD,89,PLAN B,3
+4-93,KD,93,Navette Personnel + Bus RES,3
+4-98,KD,98,Services ateliers,3
+4-99,KD,99,Services speciaux,3
+4-CITY,KD,CITY,Republique <> Republique,3
+4-CO,KD,CO,Fontaine d'Ouche <> Marmuzots,3
+4-FNI,KD,FNI,F'Night - GRAND MARCHE<>CHEVIGNY,3
+4-L3,KD,L3,Fontaine d'Ouche <> Epirey Capno,3
+4-L4,KD,L4,MARSANNAY PDS<>MONGE,3
+4-L5,KD,L5,TALANT Dullin <> Universite,3
+4-L6,KD,L6,LONGVIC <> Toison d'Or,3
+4-L7,KD,L7,QUETIGNY Europe <> CHEVIGNY,3
+4-L8,KD,L8,Chicago <> ST-APO Val Sully,3
+4-L9,KD,L9,Toison d'Or <> Monge CIGV,3
+4-LU,KD,LU,République <> Université,3
+4-NAVC,KD,NAVC,Navette boucle carraz Dimanche,3
+4-T1,KD,T1,DIJON Gare <> QUETIGNY Centre,0
+4-T2,KD,T2,CHENOVE Centre <> DIJON Valmy,0
