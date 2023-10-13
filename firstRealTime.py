@@ -29,7 +29,7 @@ def findTripByStopId(target_stop_id:str):
     listeTrip=affichageToutesLignesByDate('20231207')
     for index, row in listeTrip.iterrows():
         if str(row['stop_id'])==target_stop_id:
-            print("Trajet en "+str(row['route_type'])+" sur la ligne "+str(row['route_long_name']))
+            print("Trajet en "+str(row['route_type'])+" sur la ligne "+str(row['route_long_name'])+" à l'arrêt "+str(row['stop_name']))
             print("Arrêt trouvé pour le trip_id recherché:")
     for entity in feed.entity:
         if entity.HasField('trip_update'):

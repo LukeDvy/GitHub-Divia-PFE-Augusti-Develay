@@ -8,6 +8,7 @@ routes=pd.read_csv('GTFS/routes.txt',delimiter=',')
 shapes=pd.read_csv('GTFS/shapes.txt',delimiter=',')
 stop_times=pd.read_csv('GTFS/stop_times.txt',delimiter=',')
 stops=pd.read_csv('GTFS/stops.txt',delimiter=',')
+stop_name=pd.read_csv('GTFS/stop_name.txt',delimiter=',')
 trips=pd.read_csv('GTFS/trips.txt',delimiter=',')
 
 #print(agency.head(10))
@@ -34,9 +35,10 @@ def affichageToutesLignesByDate(date_cherche:str):
     new_base = pd.merge(trips, date_correct, on='service_id', how='inner')
     result = pd.merge(new_base, routes, on='route_id', how='inner')
     result = pd.merge(result, stop_times, on='trip_id', how='inner')
+    result = pd.merge(result, stop_name, on='stop_id', how='inner')
 
     # sélectionne certaines colonnes souhaitées
-    columns_to_display = ['route_id', 'stop_id','route_short_name', 'route_long_name', 'route_type']
+    columns_to_display = ['route_id', 'stop_id','stop_name','route_short_name', 'route_long_name', 'route_type']
 
     # traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
     result['route_type'] = result['route_type'].astype(str)
