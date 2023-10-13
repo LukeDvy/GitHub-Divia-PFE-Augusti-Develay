@@ -28,3 +28,8 @@ Données statiques sur les prévisions des horaires de chaques trips, associés 
 ### trips.txt
 `route_id`, `service_id`, `shape_id`, `trip_id`, `trip_headsign`, `trip_short_name`, `direction_id`
 Fichier permettant de lier plusieurs fichiers (calendar_dates.txt, stop_times.txt, calendar.txt), rendant le tout comme une base de données. Et, donnant des informations précises sur un trip en particulier (`direction_id` : sens de circulation)
+
+
+## GTFS-RT Description des fichiers
+Accès aux données en temps réel à l'adresse suivante : `https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update`. Les données sont collectées en Protobuf et traduites en format JSON.
+Première requête simple commentée dans le fichier [firstRealTime.py](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/firstRealTime.py), le nom de la fonction est `findStopById(target_trip_id:str,target_stop_id:str)`.
