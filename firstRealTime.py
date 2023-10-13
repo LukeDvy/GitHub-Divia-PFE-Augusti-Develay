@@ -24,27 +24,28 @@ def findStopById(target_trip_id:str,target_stop_id:str):
 def findTripByStopId(target_stop_id:str):
     average_delay=0
     countStop=0
+    countTotal=0
     #récupération du nom de la ligne
     listeTrip=affichageToutesLignesByDate('20231207')
     for index, row in listeTrip.iterrows():
         if str(row['stop_id'])==target_stop_id:
             print("Trajet en "+str(row['route_type'])+" sur la ligne "+str(row['route_long_name']))
-
+            print("Arrêt trouvé pour le trip_id recherché:")
     for entity in feed.entity:
         if entity.HasField('trip_update'):
             for stop_time_update in entity.trip_update.stop_time_update:
                 if stop_time_update.stop_id == target_stop_id: #recherche de la sous-section comportant l'id de l'arrêt souhaité
-                    print(stop_time_update.schedule_relationship)
                     if str(stop_time_update.schedule_relationship) == "0": #0=SCHEDULED, 1=SKIPPED
                         average_delay=average_delay+int(stop_time_update.arrival.delay)
                         countStop=countStop+1
-                    print("Arrêt trouvé pour le trip_id recherché:")
-                    print(stop_time_update)
-    return "Delai moyen de "+str(average_delay/countStop)
+                    countTotal+=1
+                    #print(stop_time_update)
+                    print("Numéro trip : "+entity.trip_update.trip.trip_id)
+    print(str(countTotal-countStop)+" arrêts annulés sur "+str(countTotal)+" arrêts programmés")
+    return "Delai moyen de "+str(average_delay/countStop)+" secondes"
 
 # Convertir le timestamp en une date réelle
 #date_reelle = datetime.utcfromtimestamp(_date)
 
 findStopById("29-T2-14-1-100357","4-1459")
 print(findTripByStopId("4-1459"))
-
