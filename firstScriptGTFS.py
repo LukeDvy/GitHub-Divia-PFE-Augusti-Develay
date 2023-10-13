@@ -32,9 +32,10 @@ for index, row in date_correct.iterrows(): #lis chaque ligne à la date du 07/12
 # fusionne les df en utilisant la colonne 'service_id'
 new_base = pd.merge(trips, date_correct, on='service_id', how='inner')
 result = pd.merge(new_base, routes, on='route_id', how='inner')
+result = pd.merge(result, stop_times, on='trip_id', how='inner')
 
 # séleectionne certaines colonnes souhaitées
-columns_to_display = ['route_id', 'route_short_name', 'route_long_name', 'route_type']
+columns_to_display = ['route_id', 'stop_id','route_short_name', 'route_long_name', 'route_type']
 
 # traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
 result['route_type'] = result['route_type'].astype(str)
