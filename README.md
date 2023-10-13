@@ -29,6 +29,9 @@ Données statiques sur les prévisions des horaires de chaques trips, associés 
 `route_id`, `service_id`, `shape_id`, `trip_id`, `trip_headsign`, `trip_short_name`, `direction_id`
 Fichier permettant de lier plusieurs fichiers (calendar_dates.txt, stop_times.txt, calendar.txt), rendant le tout comme une base de données. Et, donnant des informations précises sur un trip en particulier (`direction_id` : sens de circulation)
 
+### stop_name.txt
+`stop_id`,`stop_name`
+Fichier réalisé hors récupération sur les serveurs du gouvernement. Réalisé à partir d'un [fichier sur GitHub](https://github.com/Tsuna77/TransportDijon/blob/2ead8e6db3906e459aeb1fdb04e0a748ffaa755f/app/src/main/java/fr/tsuna/transportdijon/MyDB.java#L48), et après avoir réalisé du post-traitement à l'aide de la bibliothèque Pandas sur Python.
 
 ## GTFS-RT Description des fichiers
 Accès aux données en temps réel à l'adresse suivante : `https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update`. Les données sont collectées en Protobuf et traduites en format JSON.
