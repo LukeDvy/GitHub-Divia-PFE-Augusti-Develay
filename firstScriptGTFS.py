@@ -12,39 +12,43 @@ trips=pd.read_csv('GTFS/trips.txt',delimiter=',')
 
 #print(agency.head(10))
 
-#1ere recherche : pour une date donnée, recherche des trips et quelques détails
-date_cherche = '20231207'
-date_correct = calendar_dates[calendar_dates['date'].astype(str) == str(date_cherche)]
-print(date_correct)
-'''route_retenue=pd.DataFrame()
-for index, row in date_correct.iterrows(): #lis chaque ligne à la date du 07/12/2023, et pour chaque service_id
-    jour=calendar[row['service_id'] == calendar['service_id'].astype(str)]
-    route_retenue=trips[row['service_id'] == trips['service_id'].astype(str)]
-    
-    print("--------------------------------")
-    if not route_retenue.empty:
-    # Filtrer le DataFrame "routes" en utilisant route_retenue
-        routes_detail = routes[routes['route_id'].astype(str) == route_retenue['route_id'].astype(str).values[0]]
-        print(routes_detail)
-    else:
-        print("route_retenue est vide, impossible de filtrer routes_detail")'''
+#pour une date donnée, recherche des trips et quelques détails | le format de la date est 'AAAAMMJJ'
+def affichageToutesLignesByDate(date_cherche:str):
 
-# fusionne les df en utilisant la colonne 'service_id'
-new_base = pd.merge(trips, date_correct, on='service_id', how='inner')
-result = pd.merge(new_base, routes, on='route_id', how='inner')
-result = pd.merge(result, stop_times, on='trip_id', how='inner')
+    date_correct = calendar_dates[calendar_dates['date'].astype(str) == str(date_cherche)]
+    print(date_correct)
+    '''route_retenue=pd.DataFrame()
+    for index, row in date_correct.iterrows(): #lis chaque ligne à la date du 07/12/2023, et pour chaque service_id
+        jour=calendar[row['service_id'] == calendar['service_id'].astype(str)]
+        route_retenue=trips[row['service_id'] == trips['service_id'].astype(str)]
+        
+        print("--------------------------------")
+        if not route_retenue.empty:
+        # Filtrer le DataFrame "routes" en utilisant route_retenue
+            routes_detail = routes[routes['route_id'].astype(str) == route_retenue['route_id'].astype(str).values[0]]
+            print(routes_detail)
+        else:
+            print("route_retenue est vide, impossible de filtrer routes_detail")'''
 
-# séleectionne certaines colonnes souhaitées
-columns_to_display = ['route_id', 'stop_id','route_short_name', 'route_long_name', 'route_type']
+    # fusionne les df en utilisant la colonne 'service_id'
+    new_base = pd.merge(trips, date_correct, on='service_id', how='inner')
+    result = pd.merge(new_base, routes, on='route_id', how='inner')
+    result = pd.merge(result, stop_times, on='trip_id', how='inner')
 
-# traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
-result['route_type'] = result['route_type'].astype(str)
-for index, row in result.iterrows():
-    if str(row['route_type'])=="3":
-        result.loc[index, 'route_type'] = "Bus"
-    if str(row['route_type'])=="0":
-        result.loc[index, 'route_type'] = "Tramway"
-result = result[columns_to_display]
+    # sélectionne certaines colonnes souhaitées
+    columns_to_display = ['route_id', 'stop_id','route_short_name', 'route_long_name', 'route_type']
 
-# Afficher les résultats
-print(result.drop_duplicates())
+    # traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
+    result['route_type'] = result['route_type'].astype(str)
+    for index, row in result.iterrows():
+        if str(row['route_type'])=="3":
+            result.loc[index, 'route_type'] = "Bus"
+        if str(row['route_type'])=="0":
+            result.loc[index, 'route_type'] = "Tramway"
+    result = result[columns_to_display]
+
+    # Afficher les résultats
+    print(result.drop_duplicates())
+    return result.drop_duplicates()
+
+#affichageToutesLignesByDate('20231207')
