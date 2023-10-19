@@ -6,12 +6,14 @@ from datetime import datetime, date
 import pandas as pd
 import csv
 import os
-
-feed = gtfs_realtime_pb2.FeedMessage()
-response = urllib.request.urlopen('https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update')
-feed.ParseFromString(response.read())
+import time
 
 def SaveAllStopByDay():
+    #lecture du GTFS-RT
+    feed = gtfs_realtime_pb2.FeedMessage()
+    response = urllib.request.urlopen('https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update')
+    feed.ParseFromString(response.read())
+
     nomFichier = f'Trip_By_Day/{str(date.today())}.csv'
     newFichier = os.path.isfile(nomFichier)
 
@@ -53,4 +55,8 @@ def SaveAllStopByDay():
     
     return "good"
 
-SaveAllStopByDay()
+#appel de la fonction et écriture dans le fichier CSV toutes les 60 secondes
+while(True):
+    SaveAllStopByDay()
+    print("Enregistrement effectué")
+    time.sleep(60)
