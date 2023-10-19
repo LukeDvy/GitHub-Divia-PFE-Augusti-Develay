@@ -1,0 +1,65 @@
+from google.transit import gtfs_realtime_pb2
+import urllib.request
+import urllib
+from firstScriptGTFS import affichageToutesLignesByDate
+from datetime import datetime, date
+import pandas as pd
+import csv
+import os
+
+feed = gtfs_realtime_pb2.FeedMessage()
+response = urllib.request.urlopen('https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update')
+feed.ParseFromString(response.read())
+
+#fonction renvoyant la section JSON donnant les informations sur les horaires en fonction de l'id du trip à un arrêt précis
+def findStopById(target_trip_id:str,target_stop_id:str):
+    for entity in feed.entity:
+        if entity.HasField('trip_update'):
+            if entity.trip_update.trip.trip_id == target_trip_id: #recherche de la section comportant l'id du trip souhaité
+                for stop_time_update in entity.trip_update.stop_time_update:
+                    if stop_time_update.stop_id == target_stop_id: #recherche de la sous-section comportant l'id de l'arrêt souhaité
+                        print("Arrêt trouvé pour le trip_id recherché:")
+                        print(stop_time_update)
+                        return stop_time_update
+                    
+findStopById("29-T2-14-1-100357","4-1459")
+
+def SaveAllStopByDay():
+    nomFichier = f'Trip_By_Day/{str(date.today())}.csv'
+    newFichier = os.path.isfile(nomFichier)
+
+    with open(nomFichier, 'a', newline='') as fichier:
+        writer = csv.writer(fichier, delimiter=',')
+
+        # si nouveau fichier
+        if not newFichier:
+            writer.writerow(['trip_id', 'stop_id', 'direction_id','arrival_delay','arrival_time','departure_delay','departure_time'])
+
+        #listeTrip=affichageToutesLignesByDate('20231207')
+        trip_id=""
+        stop_id=""
+        direction_id=""
+        arrival_delay=""
+        arrival_time=""
+        departure_delay=""
+        departure_time=""
+        for entity in feed.entity:
+            if entity.HasField('trip_update'):
+                for id_trip in entity.trip_update.stop_time_update:
+                    trip_id=str(entity.trip_update.trip.trip_id)
+                    stop_id=str(id_trip.stop_id)
+                    direction_id=str(entity.trip_update.trip.direction_id)
+                    arrival_delay=str(id_trip.arrival.delay)
+                    arrival_time=str(id_trip.arrival.time)
+                    departure_delay=str(id_trip.departure.delay)
+                    departure_time=str(id_trip.departure.time)
+                    
+                    #creation ligne
+                    nouvelle_ligne = [trip_id, stop_id, direction_id,arrival_delay,arrival_time,departure_delay,departure_time]
+                    # Ajouter la nouvelle ligne de données
+                    writer.writerows([nouvelle_ligne])
+
+    
+    return "good"
+
+SaveAllStopByDay()

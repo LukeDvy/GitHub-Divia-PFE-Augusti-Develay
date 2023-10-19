@@ -36,3 +36,39 @@ Fichier réalisé hors récupération sur les serveurs du gouvernement. Réalis�
 ## GTFS-RT Description des fichiers
 Accès aux données en temps réel à l'adresse suivante : `https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update`. Les données sont collectées en Protobuf et traduites en format JSON.
 Première requête simple commentée dans le fichier [firstRealTime.py](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/firstRealTime.py), le nom de la fonction est `findStopById(target_trip_id:str,target_stop_id:str)`.
+
+### Exemple fichier GTFS-RT vide :
+```json
+{
+  "entity": [
+    {
+      "id": "",
+      "trip_update": {
+        "stop_time_update": [
+          {
+            "arrival": {
+              "delay": 0,
+              "time": ""
+            },
+            "departure": {
+              "delay": 0,
+              "time": ""
+            },
+            "stop_id": ""
+          }
+        ],
+        "timestamp": "",
+        "trip": {
+          "direction_id": 0,
+          "route_id": "",
+          "trip_id": ""
+        },
+        "vehicle": {
+          "id": "",
+          "label": ""
+        }
+      }
+    }
+  ]
+}
+```

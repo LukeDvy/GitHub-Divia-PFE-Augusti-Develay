@@ -35,7 +35,7 @@ def affichageToutesLignesByDate(date_cherche:str):
     new_base = pd.merge(trips, date_correct, on='service_id', how='inner')
     result = pd.merge(new_base, routes, on='route_id', how='inner')
     result = pd.merge(result, stop_times, on='trip_id', how='inner')
-    result = pd.merge(result, stop_name, on='stop_id', how='inner')
+    result = pd.merge(result, stops, on='stop_id', how='inner')
 
     # sélectionne certaines colonnes souhaitées
     columns_to_display = ['route_id', 'stop_id','stop_name','route_short_name', 'route_long_name', 'route_type']
