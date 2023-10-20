@@ -27,4 +27,4 @@ jobs:
           pip install gtfs-realtime-bindings pandas
 
       - name: Run "SaveAllDay.py"
-        run: python SaveAllDay.py
+        run: sudo python SaveAllDay.py
