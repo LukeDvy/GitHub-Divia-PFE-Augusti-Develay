@@ -67,6 +67,7 @@ def SaveAllStopByDay():
                         departure_time,
                     ]
                     # Ajouter la nouvelle ligne de données
+                    print([nouvelle_ligne])
                     writer.writerows([nouvelle_ligne])
 
         # suppression des doublons sur les colonnes 'trip_id' et 'stop_id'
