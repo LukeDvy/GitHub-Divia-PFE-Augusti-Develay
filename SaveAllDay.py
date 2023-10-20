@@ -69,6 +69,7 @@ def SaveAllStopByDay():
                     ]
                     # Ajouter la nouvelle ligne de données
                     writer.writerows([nouvelle_ligne])
+                    fichier.flush()
 
         # suppression des doublons sur les colonnes 'trip_id' et 'stop_id'
         df = pd.read_csv(nomFichier, delimiter=",")
