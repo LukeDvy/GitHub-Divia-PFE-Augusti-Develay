@@ -28,3 +28,11 @@ jobs:
 
       - name: Run "SaveAllDay.py"
         run: sudo python SaveAllDay.py
+
+      - name: Commit et Push
+        run: |
+          git config --global user.email "develay.luke@gmail.com"
+          git config --global user.name "LukeDvy"
+          git add .
+          git commit -m "Modifications automatiques SaveAllDay.py"
+          git push
