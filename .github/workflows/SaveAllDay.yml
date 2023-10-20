@@ -1,4 +1,4 @@
-name: Execution automatisée de "SaveAllDay.py"
+name: Execution Manuelle (potentiellement automatisée) de "SaveAllDay.py"
 
 on:
   #schedule:
