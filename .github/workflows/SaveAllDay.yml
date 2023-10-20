@@ -24,7 +24,7 @@ jobs:
       # installation de toutes les bibliothèques utiles au fonctionnement du script
       - name: Install Bibliotheques
         run: |
-          pip install gtfs-realtime-bindings pandas
+          sudo pip install gtfs-realtime-bindings pandas
 
       - name: Run "SaveAllDay.py"
         run: sudo python SaveAllDay.py
