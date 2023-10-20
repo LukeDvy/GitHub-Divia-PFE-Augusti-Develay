@@ -2,8 +2,8 @@ name: Execution automatisée de "SaveAllDay.py"
 
 on:
   schedule:
-  # execution du script toutes les 5 minutes
-    - cron: '*/5 * * * *'  
+  # execution du script toutes les minutes (mais réllement toutes les 5 minutes du aux github actions)
+    - cron: '* * * * *'  
   workflow_dispatch:
 
 jobs:
