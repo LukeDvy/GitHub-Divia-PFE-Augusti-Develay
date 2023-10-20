@@ -78,7 +78,5 @@ def SaveAllStopByDay():
 
 
 # appel de la fonction et écriture dans le fichier CSV toutes les 60 secondes
-while True:
-    SaveAllStopByDay()
-    print("Enregistrement effectué")
-    time.sleep(60)
+SaveAllStopByDay()
+
