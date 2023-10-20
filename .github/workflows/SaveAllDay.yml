@@ -21,5 +21,10 @@ jobs:
         with:
           python-version: 3.8
       
+      # installation de toutes les bibliothèques utiles au fonctionnement du script
+      - name: Install Bibliotheques
+        run: |
+          pip install gtfs-realtime-bindings pandas
+
       - name: Run "SaveAllDay.py"
         run: python SaveAllDay.py
