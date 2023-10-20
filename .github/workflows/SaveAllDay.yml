@@ -1,0 +1,21 @@
+name: Execution automatisée de "SaveAllDay.py"
+
+on:
+  schedule:
+  # execution du script toutes les 5 minutes
+    - cron: '*/5 * * * *'  
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    # permet l'accès au répertoire et aux fichiers aux workflows
+      - name: Checkout repertoire
+        uses: actions/checkout@v2
+    
+      # configuration environnement python
+      - name: Install python
+        uses: actions/setup-python@v4
+      
+      - name: Run "SaveAllDay.py"
+        run: python SaveAllDay.py
