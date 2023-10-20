@@ -4,6 +4,7 @@ on:
   schedule:
   # execution du script toutes les minutes (mais réllement toutes les 5 minutes du aux github actions)
     - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   run-script:
