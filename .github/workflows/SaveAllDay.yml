@@ -4,6 +4,8 @@ on:
   schedule:
   # execution du script toutes les 5 minutes
     - cron: '*/5 * * * *'  
+  workflow_dispatch:
+  
 jobs:
   run-script:
     runs-on: ubuntu-latest
