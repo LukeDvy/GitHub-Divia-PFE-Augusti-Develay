@@ -13,7 +13,7 @@ jobs:
     steps:
     # permet l'accès au répertoire et aux fichiers aux workflows
       - name: Checkout repertoire
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
     
       # configuration environnement python
       - name: Install python
