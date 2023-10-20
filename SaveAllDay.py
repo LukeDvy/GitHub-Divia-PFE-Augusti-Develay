@@ -17,7 +17,7 @@ def SaveAllStopByDay():
     )
     feed.ParseFromString(response.read())
 
-    nomFichier = f"Trip_By_Day/{str(date.today())}.csv"
+    nomFichier = os.path.join("Trip_By_Day", f"{str(date.today())}.csv")
     newFichier = os.path.isfile(nomFichier)
 
     with open(nomFichier, "a", newline="") as fichier:
