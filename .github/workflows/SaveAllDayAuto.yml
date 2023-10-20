@@ -1,0 +1,38 @@
+name: Execution automatisée de "SaveAllDay.py"
+
+on:
+  schedule:
+  # execution du script toutes les minutes (mais réllement toutes les 5 minutes du aux github actions)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    # permet l'accès au répertoire et aux fichiers aux workflows
+      - name: Checkout repertoire
+        uses: actions/checkout@v3
+    
+      # configuration environnement python
+      - name: Install python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      
+      # installation de toutes les bibliothèques utiles au fonctionnement du script
+      - name: Install Bibliotheques
+        run: |
+          sudo pip install gtfs-realtime-bindings pandas
+
+      - name: Run "SaveAllDay.py"
+        run: sudo python SaveAllDay.py
+
+      - name: Commit et Push
+        run: |
+          git config --global user.email "develay.luke@gmail.com"
+          git config --global user.name "LukeDvy"
+          git add .
+          git commit -m "Modifications automatiques SaveAllDay.py"
+          git push
