@@ -19,12 +19,13 @@ def SaveAllStopByDay():
 
     nomFichier = os.path.join("Trip_By_Day", f"{str(date.today())}.csv")
     newFichier = os.path.isfile(nomFichier)
-
+    print(newFichier)
     with open(nomFichier, "a", newline="") as fichier:
         writer = csv.writer(fichier, delimiter=",")
 
         # si nouveau fichier
         if not newFichier:
+            print("nn fichier")
             writer.writerow(
                 [
                     "trip_id",
@@ -67,7 +68,6 @@ def SaveAllStopByDay():
                         departure_time,
                     ]
                     # Ajouter la nouvelle ligne de données
-                    print([nouvelle_ligne])
                     writer.writerows([nouvelle_ligne])
 
         # suppression des doublons sur les colonnes 'trip_id' et 'stop_id'
