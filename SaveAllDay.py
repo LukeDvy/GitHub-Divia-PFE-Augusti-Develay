@@ -8,42 +8,42 @@ import csv
 import os
 import time
 
+URL_GTFS_DIVIA="https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update"
 
 def SaveAllStopByDay():
     # lecture du GTFS-RT
     feed = gtfs_realtime_pb2.FeedMessage()
     response = urllib.request.urlopen(
-        "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update"
+        URL_GTFS_DIVIA
     )
     feed.ParseFromString(response.read())
 
+    fieldNames=[
+            "trip_id",
+            "stop_id",
+            "direction_id",
+            "arrival_delay",
+            "arrival_time",
+            "departure_delay",
+            "departure_time",
+    ]
+
     nomFichier = os.path.join("Trip_By_Day", f"{str(date.today())}.csv")
-    newFichier = os.path.isfile(nomFichier)
+    newFichier = not os.path.isfile(nomFichier)
+    dataToWrite = []
     with open(nomFichier, "a", newline="") as fichier:
         writer = csv.writer(fichier, delimiter=",")
 
         # si nouveau fichier
-        if not newFichier:
-            writer.writerow(
-                [
-                    "trip_id",
-                    "stop_id",
-                    "direction_id",
-                    "arrival_delay",
-                    "arrival_time",
-                    "departure_delay",
-                    "departure_time",
-                ]
-            )
+        if newFichier:
+            writer.writerow(fieldNames)
 
+
+        writer = csv.DictWriter(fichier, fieldnames=fieldNames)
+
+        # si nouveau fichier
+        
         # listeTrip=affichageToutesLignesByDate('20231207')
-        trip_id = ""
-        stop_id = ""
-        direction_id = ""
-        arrival_delay = ""
-        arrival_time = ""
-        departure_delay = ""
-        departure_time = ""
         for entity in feed.entity:
             if entity.HasField("trip_update"):
                 for id_trip in entity.trip_update.stop_time_update:
@@ -66,14 +66,22 @@ def SaveAllStopByDay():
                         departure_time,
                     ]
                     # Ajouter la nouvelle ligne de données
-                    writer.writerows([nouvelle_ligne])
-                    fichier.flush()
-
+                    dataToWrite.append(nouvelle_ligne)
+            df = pd.DataFrame(dataToWrite, columns=fieldNames)
+            df = df.iloc[1:]
+            df = df.drop_duplicates()
+            df = df.drop_duplicates(subset=["trip_id", "stop_id","direction_id"], keep="last")
+            for row in df.to_dict(orient="records"):
+                writer.writerow(row)
         # suppression des doublons sur les colonnes 'trip_id' et 'stop_id'
-        df = pd.read_csv(nomFichier, delimiter=",")
-        df = df.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
+        df = pd.read_csv(nomFichier, delimiter=",",low_memory=False)
+        df = df.drop_duplicates(subset=["trip_id", "stop_id","direction_id"], keep="last")
         df.to_csv(nomFichier, sep=",", index=False)
 
+
+        df = pd.read_csv(nomFichier, delimiter=",",low_memory=False)
+        df = df.drop_duplicates()
+        df.to_csv(nomFichier, sep=",", index=False)
     return "good"
 
 
