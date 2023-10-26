@@ -1,31 +1,31 @@
 from google.transit import gtfs_realtime_pb2
 import urllib.request
 import urllib
-from firstScriptGTFS import affichageToutesLignesByDate
 from datetime import datetime, date
 import pandas as pd
 import csv
 import os
 import time
 
-URL_GTFS_DIVIA="https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update"
+URL_GTFS_DIVIA = (
+    "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update"
+)
+
 
 def SaveAllStopByDay():
     # lecture du GTFS-RT
     feed = gtfs_realtime_pb2.FeedMessage()
-    response = urllib.request.urlopen(
-        URL_GTFS_DIVIA
-    )
+    response = urllib.request.urlopen(URL_GTFS_DIVIA)
     feed.ParseFromString(response.read())
 
-    fieldNames=[
-            "trip_id",
-            "stop_id",
-            "direction_id",
-            "arrival_delay",
-            "arrival_time",
-            "departure_delay",
-            "departure_time",
+    fieldNames = [
+        "trip_id",
+        "stop_id",
+        "direction_id",
+        "arrival_delay",
+        "arrival_time",
+        "departure_delay",
+        "departure_time",
     ]
 
     nomFichier = os.path.join("Trip_By_Day", f"{str(date.today())}.csv")
@@ -38,11 +38,10 @@ def SaveAllStopByDay():
         if newFichier:
             writer.writerow(fieldNames)
 
-
         writer = csv.DictWriter(fichier, fieldnames=fieldNames)
 
         # si nouveau fichier
-        
+
         # listeTrip=affichageToutesLignesByDate('20231207')
         for entity in feed.entity:
             if entity.HasField("trip_update"):
@@ -70,16 +69,19 @@ def SaveAllStopByDay():
             df = pd.DataFrame(dataToWrite, columns=fieldNames)
             df = df.iloc[1:]
             df = df.drop_duplicates()
-            df = df.drop_duplicates(subset=["trip_id", "stop_id","direction_id"], keep="last")
+            df = df.drop_duplicates(
+                subset=["trip_id", "stop_id", "direction_id"], keep="last"
+            )
             for row in df.to_dict(orient="records"):
                 writer.writerow(row)
         # suppression des doublons sur les colonnes 'trip_id' et 'stop_id'
-        df = pd.read_csv(nomFichier, delimiter=",",low_memory=False)
-        df = df.drop_duplicates(subset=["trip_id", "stop_id","direction_id"], keep="last")
+        df = pd.read_csv(nomFichier, delimiter=",", low_memory=False)
+        df = df.drop_duplicates(
+            subset=["trip_id", "stop_id", "direction_id"], keep="last"
+        )
         df.to_csv(nomFichier, sep=",", index=False)
 
-
-        df = pd.read_csv(nomFichier, delimiter=",",low_memory=False)
+        df = pd.read_csv(nomFichier, delimiter=",", low_memory=False)
         df = df.drop_duplicates()
         df.to_csv(nomFichier, sep=",", index=False)
     return "good"
@@ -87,4 +89,3 @@ def SaveAllStopByDay():
 
 # appel de la fonction et écriture dans le fichier CSV toutes les 60 secondes
 SaveAllStopByDay()
-
