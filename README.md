@@ -72,3 +72,19 @@ Première requête simple commentée dans le fichier [firstRealTime.py](https://
   ]
 }
 ```
+
+## Création d'un fichier CSV par jour
+Le script python `SaveAllDay.py` permet de générer un fichier CSV par jour avec les colonnes suivantes : `trip_id`, `stop_id`, `direction_id`, `arrival_delay`, `arrival_time`, `departure_delay`, `departure_time`.
+
+Les fichiers sont indépendants chaques jours et sont nommé de la manère suivante : `AAAA-MM-JJ.csv`. Ils sont remplis au fur et à mesure de la journée en requêttant l'adresse permettant l'accès aux données GTFS-RT. Le requêtage est automatisé sur un serveur distant, en lançant toutes les minutes le script grâce à un crontab :
+```bash
+  $ * * * * *       /usr/bin/python3 /root/SaveAllDay/SaveAllDay.py
+```
+
+Le script supprimes les doublons potentielles sur les colonnes : `trip_id`, `stop_id`, `direction_id`, permettant de ne pas avoir des informations en doubles.
+
+Pour récupérer les fichiers CSV du serveur distant à son envirronement local on utilise la commande suivante depuis l'envirronement local :
+```bash
+  $ scp -r pfe-divia:/root/SaveAllDay/Trip_By_Day .
+```
+Le préfixe <kbd>-r</kbd> permet de copier le répertoire complet à l'emplacement du serveur distant suivie, et de le coller à l'emplacement sur son envirronement local, ici <kbd>.</kbd>, qui signifie de le coller dans son emplecement actuel.
