@@ -52,7 +52,7 @@ route_id,agency_id,route_short_name,route_long_name,route_type
 4-L7,KD,L7,QUETIGNY Europe <> CHEVIGNY,3
 4-L8,KD,L8,Chicago <> ST-APO Val Sully,3
 4-L9,KD,L9,Toison d'Or <> Monge CIGV,3
-4-LU,KD,LU,République <> Université,3
 4-NAVC,KD,NAVC,Navette boucle carraz Dimanche,3
+4-PL,KD,PL,Republique <> Universite,3
 4-T1,KD,T1,DIJON Gare <> QUETIGNY Centre,0
 4-T2,KD,T2,CHENOVE Centre <> DIJON Valmy,0
