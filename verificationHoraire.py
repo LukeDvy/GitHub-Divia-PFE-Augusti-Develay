@@ -113,11 +113,21 @@ def routeParTripParJour(data_in):
         ]
     )
     # columns restantes : [trip_id,arrival_delay,departure_delay,route_id,route_long_name]
+    result = result.rename(columns={"arrival_delay": "arrival_delay_mean"})
+    result = result.rename(columns={"departure_delay": "departure_delay_mean"})
+    result["arrival_delay_min"] = result["arrival_delay_mean"]
+    result["departure_delay_min"] = result["departure_delay_mean"]
+    result["arrival_delay_max"] = result["arrival_delay_mean"]
+    result["departure_delay_max"] = result["departure_delay_mean"]
 
     agg_funcs = {
         "trip_id": "count",
-        "arrival_delay": "mean",
-        "departure_delay": "mean",
+        "arrival_delay_mean": "mean",
+        "arrival_delay_min": "min",
+        "arrival_delay_max": "max",
+        "departure_delay_mean": "mean",
+        "departure_delay_min": "min",
+        "departure_delay_max": "max",
         "route_long_name": "first",
         "route_type": "first",
     }
@@ -146,7 +156,7 @@ df2 = routeParTripParJour(datas_2023_10_28)  # samedi
 def departEnAvance(data1):
     print("\nFonction énumérant les lignes parties en avances :")
     for index, row in data1.data.iterrows():
-        if row["departure_delay"] < 0:
+        if row["departure_delay_mean"] < 0:
             print(
                 "Le "
                 + data1.date
@@ -155,8 +165,10 @@ def departEnAvance(data1):
                 + " en "
                 + str(row["route_type"])
                 + " est parti en avance d'en moyenne "
-                + str(int((-1) * row["departure_delay"]))
-                + " secondes."
+                + str(int((-1) * row["departure_delay_mean"]))
+                + " secondes. Avec, un départ en avance max de "
+                + str(int((-1) * row["departure_delay_min"]))
+                + " secondes.\n"
             )
     return 0
 
