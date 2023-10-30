@@ -2,6 +2,10 @@ import pandas as pd
 import datetime
 import numpy as np
 
+#FICHIER PREMIERE VERIFICATION
+#
+#
+
 # Chargement des fichiers GTFS dans des df
 stops = pd.read_csv("GTFS/stops.txt", delimiter=",")
 routes = pd.read_csv("GTFS/routes.txt", delimiter=",")
@@ -72,5 +76,17 @@ def miseEnForme(routeId: str, tripId: str, directionId: int):
         )
 
 
-# recupRouteId("10-L3-1-1-141100")
-miseEnForme("4-L3", "10-L3-1-1-141100", 1)
+#recupRouteId("10-L3-1-1-141100")
+#miseEnForme("4-L3", "10-L3-1-1-141100", 1)
+
+def routeParTripParJour():
+    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    trips = trips.drop(columns="direction_id")
+    result = pd.merge(datas, trips, on="trip_id", how="inner")
+    result = pd.merge(result, routes, on="route_id", how="inner")
+    result = result.drop(columns=["stop_id","direction_id","service_id","shape_id","trip_headsign","trip_short_name","agency_id","route_short_name","route_type"])
+    print(result.loc[0])
+
+    return 0
+
+routeParTripParJour()
