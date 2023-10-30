@@ -90,10 +90,8 @@ class TripParJour:
         self.data = data
         self.date=date
 
-# départ en avance
 def routeParTripParJour(data_in):
     date=str(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))[:10]
-    print(date)
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(data_in, trips, on="trip_id", how="inner")
@@ -121,7 +119,7 @@ def routeParTripParJour(data_in):
         if str(row["route_type"]) == "0":
             result.loc[index, "route_type"] = "Tramway"
 
-    print(result)
+    # print(result)
     return TripParJour(result,date)
 
 df1=routeParTripParJour(datas_2023_10_27) # vendredi
@@ -129,6 +127,7 @@ df2=routeParTripParJour(datas_2023_10_28) # samedi
 
 # fonction renvoyant toutes les lignes avec une moyenne de départ en avance au dessus de la normale
 def departEnAvance(data1):
+    print("\nFonction énumérant les lignes parties en avances :")
     for index, row in data1.data.iterrows():
         if row["departure_delay"] < 0:
             print(
@@ -144,12 +143,47 @@ def departEnAvance(data1):
             )
     return 0
 
-#departEnAvance(df1)
+departEnAvance(df1)
 
-def diffSemaineEtWeekend(data_1,data_2):
+def diffDeuxDates(data_1,data_2):
+    print("\nFonction énumérant les différences entre deux dates :")
+    
     res1 = data_1.data
     res2 = data_2.data
-
+    print(
+        str(len(res1))
+        + " trajets le "
+        + str(data_1.date)
+        + " contre "
+        + str(len(res2))
+        + " trajets le "
+        + str(data_2.date)
+    )
+    result_exclu = pd.merge(res1, res2, on="route_id", how="outer",suffixes=('_df1', '_df2'))
+    result_exclu = result_exclu.loc[result_exclu['trip_id_count_df1'].isna() | result_exclu['trip_id_count_df2'].isna()]
+    for index, row in result_exclu.iterrows():
+        if str(row["trip_id_count_df1"])=="nan":
+            print(
+                "Le trajet en "
+                + str(row["route_type_df2"])
+                + " sur la ligne "
+                + str(row["route_long_name_df2"])
+                + " est de passage le "
+                + str(data_2.date)
+                + " et non le "
+                + str(data_1.date)
+                  )
+        else:
+            print(
+                "Le trajet en "
+                + str(row["route_type_df1"])
+                + " sur la ligne "
+                + str(row["route_long_name_df1"])
+                + " est de passage le "
+                + str(data_1.date)
+                + " et non le "
+                + str(data_2.date)
+                  )
     return 0
 
-diffSemaineEtWeekend(df1,df2)
+diffDeuxDates(df1,df2)
