@@ -2,7 +2,7 @@ import pandas as pd
 import datetime
 import numpy as np
 
-#FICHIER PREMIERE VERIFICATION
+# FICHIER PREMIERE VERIFICATION
 #
 #
 
@@ -15,7 +15,7 @@ datas_2023_10_28 = pd.read_csv("Trip_By_Day/2023-10-28.csv", delimiter=",")
 stop_times = pd.read_csv("GTFS/stop_times.txt", delimiter=",")
 
 
-def recupRouteId(tripId: str,data_in):
+def recupRouteId(tripId: str, data_in):
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     result = pd.merge(data_in, stops, on="stop_id", how="inner")
     trips = trips.drop(columns="direction_id")
@@ -26,7 +26,7 @@ def recupRouteId(tripId: str,data_in):
     print("Trajet " + str(result["route_id"].iloc[0]))
 
 
-def miseEnForme(routeId: str, tripId: str, directionId: int,data_in):
+def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     result = pd.merge(data_in, stops, on="stop_id", how="inner")
     trips = trips.drop(columns="direction_id")
@@ -34,8 +34,8 @@ def miseEnForme(routeId: str, tripId: str, directionId: int,data_in):
     result = pd.merge(result, routes, on="route_id", how="inner")
 
     # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
-    result = result.rename(columns={'arrival_time': 'arrival_time_reel'})
-    result = result.rename(columns={'departure_time': 'departure_time_reel'})
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
 
     result = result[result["route_id"].astype(str) == str(routeId)]
 
@@ -78,39 +78,54 @@ def miseEnForme(routeId: str, tripId: str, directionId: int,data_in):
         )
 
 
-#recupRouteId("25-T1-1-A-045244",datas_2023_10_28)
-#miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
+# recupRouteId("25-T1-1-A-045244",datas_2023_10_28)
+# miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
 
-#TRIP/ROUTE diff semaine & week-end
+# TRIP/ROUTE diff semaine & week-end
 #
 #
+
 
 class TripParJour:
-    def __init__(self,data,date):
+    def __init__(self, data, date):
         self.data = data
-        self.date=date
+        self.date = date
+
 
 def routeParTripParJour(data_in):
-    date=str(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))[:10]
+    date = str(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))[:10]
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(data_in, trips, on="trip_id", how="inner")
     result = pd.merge(result, routes, on="route_id", how="inner")
-    result = result.drop(columns=["arrival_time","departure_time","stop_id","direction_id","service_id","shape_id","trip_headsign","trip_short_name","agency_id","route_short_name"])
-    #columns restantes : [trip_id,arrival_delay,departure_delay,route_id,route_long_name]
+    result = result.drop(
+        columns=[
+            "arrival_time",
+            "departure_time",
+            "stop_id",
+            "direction_id",
+            "service_id",
+            "shape_id",
+            "trip_headsign",
+            "trip_short_name",
+            "agency_id",
+            "route_short_name",
+        ]
+    )
+    # columns restantes : [trip_id,arrival_delay,departure_delay,route_id,route_long_name]
 
     agg_funcs = {
-    'trip_id': 'count',
-    'arrival_delay': 'mean',
-    'departure_delay': 'mean',
-    'route_long_name': 'first',
-    'route_type': 'first'
+        "trip_id": "count",
+        "arrival_delay": "mean",
+        "departure_delay": "mean",
+        "route_long_name": "first",
+        "route_type": "first",
     }
 
-    # Utilisez la méthode .groupby() pour regrouper par "route_id" et appliquer les opérations spécifiées.
-    result = result.groupby('route_id').agg(agg_funcs).reset_index()
-    result = result.rename(columns={'trip_id': 'trip_id_count'})
-    
+    # utilisation de  la méthode .groupby() pour regrouper par "route_id" et appliquer les opérations spécifiée
+    result = result.groupby("route_id").agg(agg_funcs).reset_index()
+    result = result.rename(columns={"trip_id": "trip_id_count"})
+
     # traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
     result["route_type"] = result["route_type"].astype(str)
     for index, row in result.iterrows():
@@ -120,10 +135,12 @@ def routeParTripParJour(data_in):
             result.loc[index, "route_type"] = "Tramway"
 
     # print(result)
-    return TripParJour(result,date)
+    return TripParJour(result, date)
 
-df1=routeParTripParJour(datas_2023_10_27) # vendredi
-df2=routeParTripParJour(datas_2023_10_28) # samedi
+
+df1 = routeParTripParJour(datas_2023_10_27)  # vendredi
+df2 = routeParTripParJour(datas_2023_10_28)  # samedi
+
 
 # fonction renvoyant toutes les lignes avec une moyenne de départ en avance au dessus de la normale
 def departEnAvance(data1):
@@ -138,16 +155,18 @@ def departEnAvance(data1):
                 + " en "
                 + str(row["route_type"])
                 + " est parti en avance d'en moyenne "
-                + str(int((-1)*row["departure_delay"]))
+                + str(int((-1) * row["departure_delay"]))
                 + " secondes."
             )
     return 0
 
+
 departEnAvance(df1)
 
-def diffDeuxDates(data_1,data_2):
+
+def diffDeuxDates(data_1, data_2):
     print("\nFonction énumérant les différences entre deux dates :")
-    
+
     res1 = data_1.data
     res2 = data_2.data
     print(
@@ -159,10 +178,15 @@ def diffDeuxDates(data_1,data_2):
         + " trajets le "
         + str(data_2.date)
     )
-    result_exclu = pd.merge(res1, res2, on="route_id", how="outer",suffixes=('_df1', '_df2'))
-    result_exclu = result_exclu.loc[result_exclu['trip_id_count_df1'].isna() | result_exclu['trip_id_count_df2'].isna()]
+    result_exclu = pd.merge(
+        res1, res2, on="route_id", how="outer", suffixes=("_df1", "_df2")
+    )
+    result_exclu = result_exclu.loc[
+        result_exclu["trip_id_count_df1"].isna()
+        | result_exclu["trip_id_count_df2"].isna()
+    ]
     for index, row in result_exclu.iterrows():
-        if str(row["trip_id_count_df1"])=="nan":
+        if str(row["trip_id_count_df1"]) == "nan":
             print(
                 "Le trajet en "
                 + str(row["route_type_df2"])
@@ -172,7 +196,7 @@ def diffDeuxDates(data_1,data_2):
                 + str(data_2.date)
                 + " et non le "
                 + str(data_1.date)
-                  )
+            )
         else:
             print(
                 "Le trajet en "
@@ -183,7 +207,8 @@ def diffDeuxDates(data_1,data_2):
                 + str(data_1.date)
                 + " et non le "
                 + str(data_2.date)
-                  )
+            )
     return 0
 
-diffDeuxDates(df1,df2)
+
+diffDeuxDates(df1, df2)
