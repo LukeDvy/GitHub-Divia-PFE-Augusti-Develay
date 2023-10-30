@@ -90,6 +90,7 @@ class TripParJour:
         self.data = data
         self.date=date
 
+# départ en avance
 def routeParTripParJour(data_in):
     date=str(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))[:10]
     print(date)
@@ -126,8 +127,29 @@ def routeParTripParJour(data_in):
 df1=routeParTripParJour(datas_2023_10_27) # vendredi
 df2=routeParTripParJour(datas_2023_10_28) # samedi
 
+# fonction renvoyant toutes les lignes avec une moyenne de départ en avance au dessus de la normale
+def departEnAvance(data1):
+    for index, row in data1.data.iterrows():
+        if row["departure_delay"] < 0:
+            print(
+                "Le "
+                + data1.date
+                + " le trajet "
+                + str(row["route_long_name"])
+                + " en "
+                + str(row["route_type"])
+                + " est parti en avance d'en moyenne "
+                + str(int((-1)*row["departure_delay"]))
+                + " secondes."
+            )
+    return 0
+
+#departEnAvance(df1)
+
 def diffSemaineEtWeekend(data_1,data_2):
-    print(data_1.date)
+    res1 = data_1.data
+    res2 = data_2.data
+
     return 0
 
 diffSemaineEtWeekend(df1,df2)
