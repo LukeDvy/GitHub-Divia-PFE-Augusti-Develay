@@ -267,20 +267,21 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
 
-    result['departure_hour'] = result['departure_time'].str.extract(r'(\d{2}):').astype(int)
-    result = result[result['departure_hour'] < 24]
-    result = result.drop(columns="departure_hour")
+    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+
+    result['departure_hour'] = result['departure_time'].str.extract(r'(\d{2}):')
+    result['departure_hour_reel'] = result['departure_time_reel'].dt.hour
 
     # modification du type en tant que datetime
-    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
-    result['departure_time'] = pd.to_datetime(result['departure_time'])
+    result['departure_hour'] = result['departure_hour'].astype(int)
+    result['departure_hour_reel'] = result['departure_hour_reel'].astype(int)
     
-    result['departure_time_reel'] = (result['departure_time_reel'].dt.hour * 60 + result['departure_time_reel'].dt.minute).astype(int)
-    result['departure_time'] = (result['departure_time'].dt.hour * 60 + result['departure_time'].dt.minute).astype(int)
+    result = result[result['departure_hour'] < 24]
+    result = result[result['departure_hour_reel'] < 24]
     
     # création un histogramme des minutes depuis minuit
-    plt.hist(result['departure_time_reel'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates réelles')
-    plt.hist(result['departure_time'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates prévues')
+    plt.hist(result['departure_hour'], bins=range(0, 25), alpha=0.5, rwidth=0.9, align='left', label='Histogramme Dates prévues')
+    plt.hist(result['departure_hour_reel'], bins=range(0, 25), alpha=0.5, rwidth=0.9, align='left', label='Histogramme Dates réelles')
 
     plt.legend()
 
@@ -289,7 +290,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
 
     # Set des abscisses
     abs_labels = [f"{i:02d}:00" for i in range(24)] # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
-    ax.set_xticks(range(0, 1440, 60)) # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticks(range(0, 24)) # place une abscisses toutes les 60 minutes sur une journée de 24 heures
     ax.set_xticklabels(abs_labels, rotation=45) # rotation des labels pour pas qu'ils soient superposés
 
     plt.xlabel('Heure de la journée')
@@ -330,6 +331,10 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     print("Trajet " + str(result["route_long_name"].iloc[0]))
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
+
+    result['departure_hour'] = result['departure_time'].str.extract(r'(\d{2}):').astype(int)
+    result = result[result['departure_hour'] < 24]
+    result = result.drop(columns="departure_hour")
 
     # modification du type en tant que datetime
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
