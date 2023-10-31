@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime
 import numpy as np
+import matplotlib.pyplot as plt
 
 # FICHIER PREMIERE VERIFICATION
 #
@@ -84,7 +85,7 @@ def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
 
 #recupRouteId("13-T2-13-1-085531",datas_2023_10_31)
 #miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
-miseEnForme("4-T2", "13-T2-13-1-085531", 1,datas_2023_10_31)
+#miseEnForme("4-T2", "13-T2-13-1-085531", 1,datas_2023_10_31)
 
 
 # TRIP/ROUTE diff semaine & week-end
@@ -230,3 +231,58 @@ def diffDeuxDates(data_1, data_2):
 
 
 diffDeuxDates(df1, df2)
+
+def graphJourneeByRoute(routeId: str, directionId: int, data_in):
+    print("\nAffichage histogramme des passages sur une route en particulier sur une journée :")
+    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    result = pd.merge(data_in, stops, on="stop_id", how="inner")
+    trips = trips.drop(columns="direction_id")
+    result = pd.merge(result, trips, on="trip_id", how="inner")
+    result = pd.merge(result, routes, on="route_id", how="inner")
+
+    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
+
+    result = result[result["route_id"].astype(str) == str(routeId)]
+
+    result = result[result["direction_id"] == directionId]
+
+    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
+    result = pd.merge(result, stop_times, on=["trip_id", "stop_id"], how="inner") # essayer right pour afficher les données manquantes dans GTFS-RT
+
+    for index, row in result.iterrows():
+        result.loc[index, "arrival_time_reel"] = datetime.datetime.fromtimestamp(
+            row["arrival_time_reel"]
+        )
+        result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
+            row["departure_time_reel"]
+        )
+    print("Trajet " + str(result["route_long_name"].iloc[0]))
+    result = result.sort_values(by="departure_time_reel")
+    result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
+
+    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+    result['departure_time_reel'] = result['departure_time_reel'].dt.hour * 60 + result['departure_time_reel'].dt.minute
+    
+    # Créer un histogramme des minutes depuis minuit
+    plt.hist(result['departure_time_reel'], bins=24, rwidth=0.9, align='left')
+
+    # Configurez l'axe des abscisses pour afficher les heures de la journée
+    ax = plt.gca()
+
+    # Set the tick labels
+    abs_labels = [f"{i:02d}:00" for i in range(24)] # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(range(0, 1440, 60)) # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(abs_labels, rotation=45) # rotation des labels pour pas qu'ils soient superposés
+
+    plt.xlabel('Heure de la journée')
+    plt.ylabel('Fréquence de passage')
+    plt.title("Histogramme des heures de départ sur la ligne " + str(routeId.replace('4-', '')))
+
+    plt.savefig("test.pdf")
+    plt.show()
+    return 0
+
+graphJourneeByRoute("4-T2", 0,datas_2023_10_27)
+
