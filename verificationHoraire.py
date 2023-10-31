@@ -291,7 +291,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
 
 graphJourneeByRoute("4-T2", 0,datas_2023_10_27)
 
-def graphJourneeByRouteAndStop(routeId: str, stopId: str, data_in):
+def graphJourneeByRouteAndStop(stopId: str, data_in):
     print("\nAffichage histogramme des passages à un arrêt en particulier sur une journée :")
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     result = pd.merge(data_in, stops, on="stop_id", how="inner")
@@ -302,8 +302,6 @@ def graphJourneeByRouteAndStop(routeId: str, stopId: str, data_in):
     # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
     result = result.rename(columns={"arrival_time": "arrival_time_reel"})
     result = result.rename(columns={"departure_time": "departure_time_reel"})
-
-    result = result[result["route_id"].astype(str) == str(routeId)]
 
     #result = result[result["direction_id"] == directionId]
     result = result[result["stop_id"] == stopId]
@@ -338,10 +336,10 @@ def graphJourneeByRouteAndStop(routeId: str, stopId: str, data_in):
 
     plt.xlabel('Heure de la journée')
     plt.ylabel('Fréquence de passage')
-    plt.title("Histogramme des heures de départ sur la ligne " + str(routeId.replace('4-', '')) + " à l'arrêt " + str(result['stop_name'].iloc[0]))
+    plt.title("Histogramme des heures de départ sur la ligne " + str(result['route_id'].iloc[0]).replace('4-', '') + " à l'arrêt " + str(result['stop_name'].iloc[0]))
 
     plt.savefig("test.pdf")
     plt.show()
     return 0
 
-graphJourneeByRouteAndStop("4-T2","4-1457",datas_2023_10_27)
+graphJourneeByRouteAndStop("4-1457",datas_2023_10_27)
