@@ -1,0 +1,5 @@
+# ignorer tout les dossiers /GTFS
+/GTFS*/*.txt
+
+# ignorer tout les fichiers GTFS-RT /Trip_By_Day
+/Trip_By_Day/*.csv

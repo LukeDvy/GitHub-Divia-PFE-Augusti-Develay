@@ -12,6 +12,8 @@ routes = pd.read_csv("GTFS/routes.txt", delimiter=",")
 datas_2023_10_26 = pd.read_csv("Trip_By_Day/2023-10-26.csv", delimiter=",")
 datas_2023_10_27 = pd.read_csv("Trip_By_Day/2023-10-27.csv", delimiter=",")
 datas_2023_10_28 = pd.read_csv("Trip_By_Day/2023-10-28.csv", delimiter=",")
+datas_2023_10_31 = pd.read_csv("Trip_By_Day/2023-10-31.csv", delimiter=",")
+
 stop_times = pd.read_csv("GTFS/stop_times.txt", delimiter=",")
 
 
@@ -80,8 +82,10 @@ def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
         )
 
 
-# recupRouteId("25-T1-1-A-045244",datas_2023_10_28)
-miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
+#recupRouteId("13-T2-13-1-085531",datas_2023_10_31)
+#miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
+miseEnForme("4-T2", "13-T2-13-1-085531", 1,datas_2023_10_31)
+
 
 # TRIP/ROUTE diff semaine & week-end
 #
@@ -151,7 +155,7 @@ def routeParTripParJour(data_in):
 
 
 df1 = routeParTripParJour(datas_2023_10_27)  # vendredi
-df2 = routeParTripParJour(datas_2023_10_28)  # samedi
+df2 = routeParTripParJour(datas_2023_10_31)  # samedi
 
 
 # fonction renvoyant toutes les lignes avec une moyenne de départ en avance au dessus de la normale
@@ -175,7 +179,7 @@ def departEnAvance(data1):
     return 0
 
 
-departEnAvance(df1)
+departEnAvance(df2)
 
 
 def diffDeuxDates(data_1, data_2):
