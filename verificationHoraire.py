@@ -45,11 +45,12 @@ def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
     result = result[result["trip_id"].astype(str) == str(tripId)]
     ##result = result[result["stop_id"].astype(str) == str(tripId)] #####
 
-
     result = result[result["direction_id"] == directionId]
 
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
-    result = pd.merge(result, stop_times, on=["trip_id", "stop_id"], how="inner") # essayer right pour afficher les données manquantes dans GTFS-RT
+    result = pd.merge(
+        result, stop_times, on=["trip_id", "stop_id"], how="inner"
+    )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     columns_to_display = [
         "trip_id",
@@ -83,9 +84,9 @@ def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
         )
 
 
-#recupRouteId("13-T2-13-1-085531",datas_2023_10_31)
-#miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
-#miseEnForme("4-T2", "13-T2-13-1-085531", 1,datas_2023_10_31)
+# recupRouteId("13-T2-13-1-085531",datas_2023_10_31)
+# miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
+# miseEnForme("4-T2", "13-T2-13-1-085531", 1,datas_2023_10_31)
 
 
 # TRIP/ROUTE diff semaine & week-end
@@ -237,8 +238,11 @@ diffDeuxDates(df1, df2)
 # Fonctions d'affichage de graphiques
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 def graphJourneeByRoute(routeId: str, directionId: int, data_in):
-    print("\nAffichage histogramme des passages sur une route en particulier sur une journée :")
+    print(
+        "\nAffichage histogramme des passages sur une route en particulier sur une journée :"
+    )
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     result = pd.merge(data_in, stops, on="stop_id", how="inner")
     trips = trips.drop(columns="direction_id")
@@ -254,7 +258,9 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     result = result[result["direction_id"] == directionId]
 
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
-    result = pd.merge(result, stop_times, on=["trip_id", "stop_id"], how="inner") # essayer right pour afficher les données manquantes dans GTFS-RT
+    result = pd.merge(
+        result, stop_times, on=["trip_id", "stop_id"], how="inner"
+    )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
         result.loc[index, "arrival_time_reel"] = datetime.datetime.fromtimestamp(
@@ -267,21 +273,33 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
 
-    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+    result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
 
-    result['departure_hour'] = result['departure_time'].str.extract(r'(\d{2}):')
-    result['departure_hour_reel'] = result['departure_time_reel'].dt.hour
+    # exctraction de l'heure
+    result["departure_hour"] = result["departure_time"].str.extract(r"(\d{2}):")
+    result["departure_hour_reel"] = result["departure_time_reel"].dt.hour
 
     # modification du type en tant que datetime
-    result['departure_hour'] = result['departure_hour'].astype(int)
-    result['departure_hour_reel'] = result['departure_hour_reel'].astype(int)
-    
-    result = result[result['departure_hour'] < 24]
-    result = result[result['departure_hour_reel'] < 24]
-    
+    result["departure_hour"] = result["departure_hour"].astype(int)
+    result["departure_hour_reel"] = result["departure_hour_reel"].astype(int)
+
     # création un histogramme des minutes depuis minuit
-    plt.hist(result['departure_hour'], bins=range(0, 25), alpha=0.5, rwidth=0.9, align='left', label='Histogramme Dates prévues')
-    plt.hist(result['departure_hour_reel'], bins=range(0, 25), alpha=0.5, rwidth=0.9, align='left', label='Histogramme Dates réelles')
+    plt.hist(
+        result["departure_hour"],
+        bins=range(0, 27),
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Histogramme Dates prévues",
+    )
+    plt.hist(
+        result["departure_hour_reel"],
+        bins=range(0, 27),
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Histogramme Dates réelles",
+    )
 
     plt.legend()
 
@@ -289,22 +307,35 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     ax = plt.gca()
 
     # Set des abscisses
-    abs_labels = [f"{i:02d}:00" for i in range(24)] # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
-    ax.set_xticks(range(0, 24)) # place une abscisses toutes les 60 minutes sur une journée de 24 heures
-    ax.set_xticklabels(abs_labels, rotation=45) # rotation des labels pour pas qu'ils soient superposés
+    abs_labels = [
+        f"{i%24:02d}:00" for i in range(26)
+    ]  # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(
+        range(0, 26)
+    )  # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(
+        abs_labels, rotation=45
+    )  # rotation des labels pour pas qu'ils soient superposés
 
-    plt.xlabel('Heure de la journée')
-    plt.ylabel('Fréquence de passage')
-    plt.title("Histogramme des heures de départ sur la ligne " + str(routeId.replace('4-', '')))
+    plt.xlabel("Heure de la journée")
+    plt.ylabel("Fréquence de passage")
+    plt.title(
+        "Histogramme des heures de départ sur la ligne "
+        + str(routeId.replace("4-", ""))
+    )
 
     plt.savefig("test.pdf")
     plt.show()
     return 0
 
-graphJourneeByRoute("4-T2", 0,datas_2023_10_27)
+
+graphJourneeByRoute("4-T2", 0, datas_2023_10_27)
+
 
 def graphJourneeByRouteAndStop(stopId: str, data_in):
-    print("\nAffichage histogramme des passages à un arrêt en particulier sur une journée :")
+    print(
+        "\nAffichage histogramme des passages à un arrêt en particulier sur une journée :"
+    )
     trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
     result = pd.merge(data_in, stops, on="stop_id", how="inner")
     trips = trips.drop(columns="direction_id")
@@ -315,11 +346,13 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     result = result.rename(columns={"arrival_time": "arrival_time_reel"})
     result = result.rename(columns={"departure_time": "departure_time_reel"})
 
-    #result = result[result["direction_id"] == directionId]
+    # result = result[result["direction_id"] == directionId]
     result = result[result["stop_id"] == stopId]
 
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
-    result = pd.merge(result, stop_times, on=["trip_id", "stop_id"], how="inner") # essayer right pour afficher les données manquantes dans GTFS-RT
+    result = pd.merge(
+        result, stop_times, on=["trip_id", "stop_id"], how="inner"
+    )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
         result.loc[index, "arrival_time_reel"] = datetime.datetime.fromtimestamp(
@@ -332,25 +365,51 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
 
-    result['departure_hour'] = result['departure_time'].str.extract(r'(\d{2}):').astype(int)
-    result = result[result['departure_hour'] < 24]
+    result["departure_hour"] = (
+        result["departure_time"].str.extract(r"(\d{2}):").astype(int)
+    )
+    result = result[result["departure_hour"] < 24]
     result = result.drop(columns="departure_hour")
 
     # modification du type en tant que datetime
-    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
-    result['departure_time'] = pd.to_datetime(result['departure_time'])
+    result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
+    result["departure_time"] = pd.to_datetime(result["departure_time"])
 
     # suppression des valeurs en dehors du champ correcte des heures
-    result = result[(result['departure_time_reel'].dt.hour >= 0) & (result['departure_time_reel'].dt.hour <= 23)]
-    result = result[(result['departure_time'].dt.hour >= 0) & (result['departure_time'].dt.hour <= 23)]
+    result = result[
+        (result["departure_time_reel"].dt.hour >= 0)
+        & (result["departure_time_reel"].dt.hour <= 23)
+    ]
+    result = result[
+        (result["departure_time"].dt.hour >= 0)
+        & (result["departure_time"].dt.hour <= 23)
+    ]
 
+    result["departure_time_reel"] = (
+        result["departure_time_reel"].dt.hour * 60
+        + result["departure_time_reel"].dt.minute
+    )
+    result["departure_time"] = (
+        result["departure_time"].dt.hour * 60 + result["departure_time"].dt.minute
+    )
 
-    result['departure_time_reel'] = result['departure_time_reel'].dt.hour * 60 + result['departure_time_reel'].dt.minute
-    result['departure_time'] = result['departure_time'].dt.hour * 60 + result['departure_time'].dt.minute
-    
     # création un histogramme des minutes depuis minuit
-    plt.hist(result['departure_time_reel'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates réelles')
-    plt.hist(result['departure_time'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates prévues')
+    plt.hist(
+        result["departure_time_reel"],
+        bins=24,
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Histogramme Dates réelles",
+    )
+    plt.hist(
+        result["departure_time"],
+        bins=24,
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Histogramme Dates prévues",
+    )
 
     plt.legend()
 
@@ -358,16 +417,28 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     ax = plt.gca()
 
     # Set des abscisses
-    abs_labels = [f"{i:02d}:00" for i in range(24)] # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
-    ax.set_xticks(range(0, 1440, 60)) # place une abscisses toutes les 60 minutes sur une journée de 24 heures
-    ax.set_xticklabels(abs_labels, rotation=45) # rotation des labels pour pas qu'ils soient superposés
+    abs_labels = [
+        f"{i:02d}:00" for i in range(24)
+    ]  # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(
+        range(0, 1440, 60)
+    )  # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(
+        abs_labels, rotation=45
+    )  # rotation des labels pour pas qu'ils soient superposés
 
-    plt.xlabel('Heure de la journée')
-    plt.ylabel('Fréquence de passage')
-    plt.title("Histogramme des heures de départ sur la ligne " + str(result['route_id'].iloc[0]).replace('4-', '') + " à l'arrêt " + str(result['stop_name'].iloc[0]))
+    plt.xlabel("Heure de la journée")
+    plt.ylabel("Fréquence de passage")
+    plt.title(
+        "Histogramme des heures de départ sur la ligne "
+        + str(result["route_id"].iloc[0]).replace("4-", "")
+        + " à l'arrêt "
+        + str(result["stop_name"].iloc[0])
+    )
 
     plt.savefig("test.pdf")
     plt.show()
     return 0
 
-graphJourneeByRouteAndStop("4-1457",datas_2023_10_27)
+
+graphJourneeByRouteAndStop("4-1457", datas_2023_10_27)
