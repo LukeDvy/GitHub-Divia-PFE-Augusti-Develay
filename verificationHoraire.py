@@ -40,11 +40,13 @@ def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
     result = result[result["route_id"].astype(str) == str(routeId)]
 
     result = result[result["trip_id"].astype(str) == str(tripId)]
+    ##result = result[result["stop_id"].astype(str) == str(tripId)] #####
+
 
     result = result[result["direction_id"] == directionId]
 
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
-    result = pd.merge(result, stop_times, on=["trip_id", "stop_id"], how="inner")
+    result = pd.merge(result, stop_times, on=["trip_id", "stop_id"], how="inner") # essayer right pour afficher les données manquantes dans GTFS-RT
 
     columns_to_display = [
         "trip_id",
@@ -79,7 +81,7 @@ def miseEnForme(routeId: str, tripId: str, directionId: int, data_in):
 
 
 # recupRouteId("25-T1-1-A-045244",datas_2023_10_28)
-# miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
+miseEnForme("4-T1", "25-T1-1-A-045244", 0,datas_2023_10_28)
 
 # TRIP/ROUTE diff semaine & week-end
 #

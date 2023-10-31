@@ -11,6 +11,9 @@ URL_GTFS_DIVIA = (
     "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update"
 )
 
+def schedule_value(number):
+    return gtfs_realtime_pb2.TripUpdate.StopTimeUpdate.ScheduleRelationship.Name(number)
+#schedule_value(trip.schedule_relationship)
 
 def SaveAllStopByDay():
     # lecture du GTFS-RT
@@ -26,6 +29,7 @@ def SaveAllStopByDay():
         "arrival_time",
         "departure_delay",
         "departure_time",
+        "schedule_relationship",
     ]
 
     nomFichier = os.path.join("Trip_By_Day", f"{str(date.today())}.csv")
@@ -53,6 +57,7 @@ def SaveAllStopByDay():
                     arrival_time = str(id_trip.arrival.time)
                     departure_delay = str(id_trip.departure.delay)
                     departure_time = str(id_trip.departure.time)
+                    schedule_relationship = schedule_value(entity.trip_update.trip.schedule_relationship)
 
                     # creation ligne
                     nouvelle_ligne = [
@@ -63,6 +68,7 @@ def SaveAllStopByDay():
                         arrival_time,
                         departure_delay,
                         departure_time,
+                        schedule_relationship,
                     ]
                     # Ajouter la nouvelle ligne de données
                     dataToWrite.append(nouvelle_ligne)
@@ -89,3 +95,4 @@ def SaveAllStopByDay():
 
 # appel de la fonction et écriture dans le fichier CSV toutes les 60 secondes
 SaveAllStopByDay()
+

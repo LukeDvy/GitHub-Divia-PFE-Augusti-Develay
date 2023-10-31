@@ -61,6 +61,7 @@ Première requête simple commentée dans le fichier [firstRealTime.py](https://
         "trip": {
           "direction_id": 0,
           "route_id": "",
+          "schedule_relationship": "",
           "trip_id": ""
         },
         "vehicle": {
