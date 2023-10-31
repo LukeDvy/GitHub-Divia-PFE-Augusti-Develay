@@ -267,11 +267,22 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
 
+    result['departure_hour'] = result['departure_time'].str.extract(r'(\d{2}):').astype(int)
+    result = result[result['departure_hour'] < 24]
+    result = result.drop(columns="departure_hour")
+
+    # modification du type en tant que datetime
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
-    result['departure_time_reel'] = result['departure_time_reel'].dt.hour * 60 + result['departure_time_reel'].dt.minute
+    result['departure_time'] = pd.to_datetime(result['departure_time'])
     
-    # création d'un histogramme des minutes depuis minuit
-    plt.hist(result['departure_time_reel'], bins=24, rwidth=0.9, align='left')
+    result['departure_time_reel'] = (result['departure_time_reel'].dt.hour * 60 + result['departure_time_reel'].dt.minute).astype(int)
+    result['departure_time'] = (result['departure_time'].dt.hour * 60 + result['departure_time'].dt.minute).astype(int)
+    
+    # création un histogramme des minutes depuis minuit
+    plt.hist(result['departure_time_reel'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates réelles')
+    plt.hist(result['departure_time'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates prévues')
+
+    plt.legend()
 
     # configuration l'axe des abscisses pour afficher les heures de la journée
     ax = plt.gca()
@@ -320,11 +331,23 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
 
+    # modification du type en tant que datetime
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+    result['departure_time'] = pd.to_datetime(result['departure_time'])
+
+    # suppression des valeurs en dehors du champ correcte des heures
+    result = result[(result['departure_time_reel'].dt.hour >= 0) & (result['departure_time_reel'].dt.hour <= 23)]
+    result = result[(result['departure_time'].dt.hour >= 0) & (result['departure_time'].dt.hour <= 23)]
+
+
     result['departure_time_reel'] = result['departure_time_reel'].dt.hour * 60 + result['departure_time_reel'].dt.minute
+    result['departure_time'] = result['departure_time'].dt.hour * 60 + result['departure_time'].dt.minute
     
     # création un histogramme des minutes depuis minuit
-    plt.hist(result['departure_time_reel'], bins=24, rwidth=0.9, align='left')
+    plt.hist(result['departure_time_reel'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates réelles')
+    plt.hist(result['departure_time'], bins=24, alpha=0.5,rwidth=0.9, align='left', label='Histogramme Dates prévues')
+
+    plt.legend()
 
     # configuration l'axe des abscisses pour afficher les heures de la journée
     ax = plt.gca()
