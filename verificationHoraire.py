@@ -324,7 +324,6 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
         + str(routeId.replace("4-", ""))
     )
 
-    plt.savefig("test.pdf")
     plt.show()
     return 0
 
@@ -436,7 +435,6 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
         + str(result["stop_name"].iloc[0])
     )
 
-    plt.savefig("test.pdf")
     plt.show()
     return 0
 
