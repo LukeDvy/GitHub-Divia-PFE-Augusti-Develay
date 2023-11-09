@@ -374,7 +374,7 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     # modification du type en tant que datetime
     result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
     result["departure_time"] = pd.to_datetime(result["departure_time"])
-
+    
     # suppression des valeurs en dehors du champ correcte des heures
     result = result[
         (result["departure_time_reel"].dt.hour >= 0)

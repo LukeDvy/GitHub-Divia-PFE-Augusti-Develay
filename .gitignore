@@ -3,3 +3,8 @@
 
 # ignorer tous les fichiers GTFS-RT /Trip_By_Day
 /Trip_By_Day/*.csv
+
+# ignore les fichiers générés dans le dossier __pycache__ lors de l'éxecution du code python
+__pycache__/
+*.py[cod]
+*$py.class
