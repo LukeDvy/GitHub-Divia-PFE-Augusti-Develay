@@ -1,6 +1,9 @@
 # GitHub-Divia-PFE-Augusti-Develay
  Répertoire GitHub du Projet de fin d'étude sur l'analyse de données du réseau Divia à Dijon.
 
+ 
+ Les repertoires `Trip_By_Day` et `GTFS` contiennent des exemples de fichiers. Ils ne sont donc pas mis à jour sur ce répertoire GitHub.
+
 ## GTFS Description des fichiers
 ### agency.txt
 `agency_id`, `agency_name`, `agency_url`, `agency_timezone`
