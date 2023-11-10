@@ -199,6 +199,101 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
     st.pyplot(fig)
     return 0
 
+
+def graphJourneeByRouteAndStop(stopId: str, data_in,selected_date):
+    print(
+        "\nAffichage histogramme des passages à un arrêt en particulier sur une journée :"
+    )
+    trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
+    result = pd.merge(data_in, stops, on="stop_id", how="inner")
+    trips = trips.drop(columns="direction_id")
+    result = pd.merge(result, trips, on="trip_id", how="inner")
+    result = pd.merge(result, routes, on="route_id", how="inner")
+
+    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
+
+    # result = result[result["direction_id"] == directionId]
+    result = result[result["stop_id"] == stopId]
+
+    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
+    result = pd.merge(
+        result, stop_times, on=["trip_id", "stop_id"], how="inner"
+    )  # essayer right pour afficher les données manquantes dans GTFS-RT
+
+    for index, row in result.iterrows():
+        result.loc[index, "arrival_time_reel"] = datetime.datetime.fromtimestamp(
+            row["arrival_time_reel"]
+        )
+        result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
+            row["departure_time_reel"]
+        )
+    print(result["route_long_name"])
+    try:
+        print("Trajet " + str(result["route_long_name"].iloc[0]))
+    except:
+        st.warning(f"Aucune données trouvées pour la date {selected_date}")
+        return 0
+    result = result.sort_values(by="departure_time_reel")
+    result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
+
+    result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
+
+    # exctraction de l'heure
+    result["departure_hour"] = result["departure_time"].str.extract(r"(\d{2}):")
+    result["departure_hour_reel"] = result["departure_time_reel"].dt.hour
+
+    # modification du type en tant que datetime
+    result["departure_hour"] = result["departure_hour"].astype(int)
+    result["departure_hour_reel"] = result["departure_hour_reel"].astype(int)
+
+
+    st.write("Histogramme des heures de départ sur la ligne "
+        + str(result["route_id"].iloc[0]).replace("4-", "")
+        + " à l'arrêt "
+        + str(result["stop_name"].iloc[0]))
+
+    # Créer les histogrammes avec Matplotlib
+    fig, ax = plt.subplots()
+    # création un histogramme des minutes depuis minuit
+    ax.hist(
+        result["departure_hour"],
+        bins=range(0, 27),
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Histogramme Dates prévues",
+    )
+    ax.hist(
+        result["departure_hour_reel"],
+        bins=range(0, 27),
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Histogramme Dates réelles",
+    )
+
+    ax.legend()
+
+    # Set des abscisses
+    abs_labels = [
+        f"{i%24:02d}:00" for i in range(26)
+    ]  # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(
+        range(0, 26)
+    )  # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(
+        abs_labels, rotation=45
+    )  # rotation des labels pour pas qu'ils soient superposés
+
+    ax.set_xlabel("Heure de la journée")
+    ax.set_ylabel("Fréquence de passage")
+
+    # affichage du graphique dans Streamlit
+    st.pyplot(fig)
+    return 0
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Fin fonctions, passage section Menu
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -207,30 +302,49 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
 if __name__ == "__main__":
     st.sidebar.title("Menu")
 
+    # Ajoute un sélecteur pour choisir la fonctionnalité
+    fonctionnalite = st.sidebar.selectbox("Sélectionne une fonctionnalité", ["Accueil","Ligne avec moyenne de départ en avance", "Graphique Arrêts par route","Graphique Arrêts par Stop"])
+
     # date picker
     selected_date = st.sidebar.date_input("Sélectionner une date", datetime.datetime(2023, 10, 27))
     date_str = selected_date.strftime('%Y_%m_%d')
     nom_dataframe = f"datas_{date_str}"
     
-    # ligne de trajet picker
-    choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
-    ligne_trajet = st.sidebar.selectbox("Sélectionne une Ligne Divia", choix_routes["route_long_name"])
-    print(choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0])
-    index = choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0]
-
-    selected_id = choix_routes.loc[index, "route_id"]
-    print(selected_id)
-    # Ajoute un sélecteur pour choisir la fonctionnalité
-    fonctionnalite = st.sidebar.selectbox("Sélectionne une fonctionnalité", ["Afficher DataFrame", "Tracer Graphique"])
-
+    
+    
+    if fonctionnalite == "Accueil":
+        st.header("Accueil")
     # Appelle la fonction appropriée en fonction de la sélection
-    if fonctionnalite == "Afficher DataFrame":
+    elif fonctionnalite == "Ligne avec moyenne de départ en avance":
         if nom_dataframe in globals():
             departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
-    elif fonctionnalite == "Tracer Graphique":
+    elif fonctionnalite == "Graphique Arrêts par route":
         if nom_dataframe in globals():
+            # ligne de trajet picker
+            choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
+            ligne_trajet = st.sidebar.selectbox("Sélectionne une Ligne Divia", choix_routes["route_long_name"])
+            print(choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0])
+            index = choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0]
+
+            selected_id = choix_routes.loc[index, "route_id"]
+            print(selected_id)
+
             graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe],selected_date)
+        else:
+            st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+    elif fonctionnalite == "Graphique Arrêts par Stop":
+        if nom_dataframe in globals():
+            # ligne de trajet picker
+            choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
+            ligne_trajet = st.sidebar.selectbox("Sélectionne une Ligne Divia", choix_routes["route_long_name"])
+            print(choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0])
+            index = choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0]
+
+            selected_id = choix_routes.loc[index, "route_id"]
+            print(selected_id)
+
+            graphJourneeByRouteAndStop("4-1457", globals()[nom_dataframe],selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")

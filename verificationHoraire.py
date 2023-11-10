@@ -14,6 +14,8 @@ datas_2023_10_26 = pd.read_csv("Trip_By_Day/2023-10-26.csv", delimiter=",")
 datas_2023_10_27 = pd.read_csv("Trip_By_Day/2023-10-27.csv", delimiter=",")
 datas_2023_10_28 = pd.read_csv("Trip_By_Day/2023-10-28.csv", delimiter=",")
 datas_2023_10_31 = pd.read_csv("Trip_By_Day/2023-10-31.csv", delimiter=",")
+datas_2023_11_09 = pd.read_csv("Trip_By_Day/2023-11-09.csv", delimiter=",")
+
 
 stop_times = pd.read_csv("GTFS/stop_times.txt", delimiter=",")
 
@@ -439,4 +441,4 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     return 0
 
 
-graphJourneeByRouteAndStop("4-1457", datas_2023_10_27)
+graphJourneeByRouteAndStop("4-1457", datas_2023_11_09)
