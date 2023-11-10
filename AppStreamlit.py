@@ -3,16 +3,25 @@ import pandas as pd
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+nom_GTFS="GTFS_2023_11_07"
 
 # Chargement des fichiers GTFS dans des df
-stops = pd.read_csv("GTFS/stops.txt", delimiter=",")
-routes = pd.read_csv("GTFS/routes.txt", delimiter=",")
-datas_2023_10_26 = pd.read_csv("Trip_By_Day/2023-10-26.csv", delimiter=",")
-datas_2023_10_27 = pd.read_csv("Trip_By_Day/2023-10-27.csv", delimiter=",")
-datas_2023_10_28 = pd.read_csv("Trip_By_Day/2023-10-28.csv", delimiter=",")
-datas_2023_10_31 = pd.read_csv("Trip_By_Day/2023-10-31.csv", delimiter=",")
+stops = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
+routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
 
-stop_times = pd.read_csv("GTFS/stop_times.txt", delimiter=",")
+
+fichiers_csv = os.listdir("Trip_By_Day")
+for fichier_csv in fichiers_csv:
+    # garde que la date du nom du fichier
+    date_str = fichier_csv.split('.')[0].replace('-', '_')
+    # nouveau nom dataframe
+    nom_dataframe = f"datas_{date_str}"
+    # création d'un dataframe par fichier csv
+    globals()[nom_dataframe] = pd.read_csv(os.path.join("Trip_By_Day", fichier_csv), delimiter=",")
+
+stop_times = pd.read_csv(f"{nom_GTFS}/stop_times.txt", delimiter=",")
 
 class TripParJour:
     def __init__(self, data, date):
@@ -22,7 +31,7 @@ class TripParJour:
 
 def routeParTripParJour(data_in):
     date = str(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))[:10]
-    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(data_in, trips, on="trip_id", how="inner")
     result = pd.merge(result, routes, on="route_id", how="inner")
@@ -103,7 +112,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     print(
         "\nAffichage histogramme des passages sur une route en particulier sur une journée :"
     )
-    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
     result = pd.merge(data_in, stops, on="stop_id", how="inner")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(result, trips, on="trip_id", how="inner")
@@ -194,11 +203,30 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
 if __name__ == "__main__":
     st.sidebar.title("Menu")
 
+    # date picker
+    selected_date = st.sidebar.date_input("Sélectionner une date", datetime.datetime(2023, 10, 27))
+    date_str = selected_date.strftime('%Y_%m_%d')
+    nom_dataframe = f"datas_{date_str}"
+    
+    # ligne de trajet picker
+    choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
+    ligne_trajet = st.sidebar.selectbox("Sélectionne une Ligne Divia", choix_routes["route_long_name"])
+    print(choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0])
+    index = choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0]
+
+    selected_id = choix_routes.loc[index, "route_id"]
+    print(selected_id)
     # Ajoute un sélecteur pour choisir la fonctionnalité
     fonctionnalite = st.sidebar.selectbox("Sélectionne une fonctionnalité", ["Afficher DataFrame", "Tracer Graphique"])
 
     # Appelle la fonction appropriée en fonction de la sélection
     if fonctionnalite == "Afficher DataFrame":
-        departEnAvance(routeParTripParJour(datas_2023_10_27))
+        if nom_dataframe in globals():
+            departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
+        else:
+            st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
     elif fonctionnalite == "Tracer Graphique":
-        graphJourneeByRoute("4-T2", 0, datas_2023_10_27)
+        if nom_dataframe in globals():
+            graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe])
+        else:
+            st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
