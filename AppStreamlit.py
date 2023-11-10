@@ -156,6 +156,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
     result["departure_hour"] = result["departure_hour"].astype(int)
     result["departure_hour_reel"] = result["departure_hour_reel"].astype(int)
 
+    # affichage titre histogramme
     st.markdown(
         f"<h4 style='text-align: center;'>Histogramme des heures de départ sur la Ligne "
         f"{routeId.replace('4-', '')}</h4>",
@@ -232,7 +233,6 @@ def graphJourneeByRouteAndStop(stopId: str, data_in,selected_date):
         result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
         )
-    print(result["route_long_name"])
     try:
         print("Trajet " + str(result["route_long_name"].iloc[0]))
     except:
@@ -251,13 +251,14 @@ def graphJourneeByRouteAndStop(stopId: str, data_in,selected_date):
     result["departure_hour"] = result["departure_hour"].astype(int)
     result["departure_hour_reel"] = result["departure_hour_reel"].astype(int)
 
-
+    # affichage titre histogramme
     st.markdown(
         f"<h5 style='text-align: center;'>Histogramme des heures de départ sur la Ligne "
         f"{str(result['route_id'].iloc[0]).replace('4-', '')} à l'arrêt "
         f"{str(result['stop_name'].iloc[0])}</h5>",
         unsafe_allow_html=True
     )
+
     # Créer les histogrammes avec Matplotlib
     fig, ax = plt.subplots()
     # création un histogramme des minutes depuis minuit
