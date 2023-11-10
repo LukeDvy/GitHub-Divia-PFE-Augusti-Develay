@@ -92,3 +92,15 @@ Pour récupérer les fichiers CSV du serveur distant à son envirronement local 
   $ scp -r pfe-divia:/root/SaveAllDay/Trip_By_Day .
 ```
 Le préfixe <kbd>-r</kbd> permet de copier le répertoire complet à l'emplacement du serveur distant suivie, et de le coller à l'emplacement sur son envirronement local, ici <kbd>.</kbd>, qui signifie de le coller dans son emplecement actuel.
+
+
+## StreamLit
+Streamlit est un framework convivial en Python qui simplifie le processus de création d'applications web interactives. Grâce à Streamlit, il devient facile d'intégrer des graphiques générés par Matplotlib, tout en facilitant l'affichage et la manipulation de données à l'aide de pandas. De plus, Streamlit offre des fonctionnalités avancées telles que des date pickers et des listes déroulantes, facilitant ainsi la mise en place d'outils de recherche puissants pour explorer et analyser les données de manière interactive.
+Nous allons l'utiliser pour afficher un Date Picker, pour choisir la date sur laquelle réaliser nos recherches, et des listes déroulantes pour choisir en particulier un arrêt ou une ligne (bus, tramway).
+
+Le fichier contenant l'application se nomme `AppStreamlit.py`. Et, nous la lançons dans le terminal grâce à la commande :
+```bash
+  $ streamlit run AppStreamlit.py
+```
+
+Ensuite, un URL sera affiché dans la console, permettant l'accès au site créé sur un navigateur.
