@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-nom_GTFS="GTFS_2023_11_07"
+nom_GTFS = "GTFS_2023_11_07"
 
 # Chargement des fichiers GTFS dans des df
 stops = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
@@ -15,13 +15,16 @@ routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
 fichiers_csv = os.listdir("Trip_By_Day")
 for fichier_csv in fichiers_csv:
     # garde que la date du nom du fichier
-    date_str = fichier_csv.split('.')[0].replace('-', '_')
+    date_str = fichier_csv.split(".")[0].replace("-", "_")
     # nouveau nom dataframe
     nom_dataframe = f"datas_{date_str}"
     # création d'un dataframe par fichier csv
-    globals()[nom_dataframe] = pd.read_csv(os.path.join("Trip_By_Day", fichier_csv), delimiter=",")
+    globals()[nom_dataframe] = pd.read_csv(
+        os.path.join("Trip_By_Day", fichier_csv), delimiter=","
+    )
 
 stop_times = pd.read_csv(f"{nom_GTFS}/stop_times.txt", delimiter=",")
+
 
 class TripParJour:
     def __init__(self, data, date):
@@ -88,10 +91,10 @@ def routeParTripParJour(data_in):
 # fonction renvoyant toutes les lignes avec une moyenne de départ en avance au dessus de la normale
 def departEnAvance(data1):
     print("\nFonction énumérant les lignes parties en avances :")
-    df_final=pd.DataFrame(columns=data1.data.columns)
+    df_final = pd.DataFrame(columns=data1.data.columns)
     for index, row in data1.data.iterrows():
         if row["departure_delay_mean"] < 0:
-            df_final.loc[index]=row
+            df_final.loc[index] = row
             print(
                 "Le "
                 + data1.date
@@ -108,7 +111,8 @@ def departEnAvance(data1):
     st.dataframe(df_final)
     return 0
 
-def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
+
+def graphJourneeByRoute(routeId: str, directionId: int, data_in, selected_date):
     print(
         "\nAffichage histogramme des passages sur une route en particulier sur une journée :"
     )
@@ -160,7 +164,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
     st.markdown(
         f"<h4 style='text-align: center;'>Histogramme des heures de départ sur la Ligne "
         f"{routeId.replace('4-', '')}</h4>",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     # Créer les histogrammes avec Matplotlib
@@ -204,7 +208,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
     return 0
 
 
-def graphJourneeByRouteAndStop(stopId: str, data_in,selected_date):
+def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
     print(
         "\nAffichage histogramme des passages à un arrêt en particulier sur une journée :"
     )
@@ -256,7 +260,7 @@ def graphJourneeByRouteAndStop(stopId: str, data_in,selected_date):
         f"<h5 style='text-align: center;'>Histogramme des heures de départ sur la Ligne "
         f"{str(result['route_id'].iloc[0]).replace('4-', '')} à l'arrêt "
         f"{str(result['stop_name'].iloc[0])}</h5>",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     # Créer les histogrammes avec Matplotlib
@@ -299,6 +303,7 @@ def graphJourneeByRouteAndStop(stopId: str, data_in,selected_date):
     st.pyplot(fig)
     return 0
 
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Fin fonctions, passage section Menu
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -308,15 +313,23 @@ if __name__ == "__main__":
     st.sidebar.title("Menu")
 
     # Ajoute un sélecteur pour choisir la fonctionnalité
-    fonctionnalite = st.sidebar.selectbox("Sélectionne une fonctionnalité", ["Accueil","Ligne avec moyenne de départ en avance", "Graphique Arrêts par route","Graphique Arrêts par Stop"])
+    fonctionnalite = st.sidebar.selectbox(
+        "Sélectionne une fonctionnalité",
+        [
+            "Accueil",
+            "Ligne avec moyenne de départ en avance",
+            "Graphique Arrêts par route",
+            "Graphique Arrêts par Stop",
+        ],
+    )
 
     # date picker
-    selected_date = st.sidebar.date_input("Sélectionner une date", datetime.datetime(2023, 10, 27))
-    date_str = selected_date.strftime('%Y_%m_%d')
+    selected_date = st.sidebar.date_input(
+        "Sélectionner une date", datetime.datetime(2023, 10, 27)
+    )
+    date_str = selected_date.strftime("%Y_%m_%d")
     nom_dataframe = f"datas_{date_str}"
-    
-    
-    
+
     if fonctionnalite == "Accueil":
         st.header("Accueil")
     # Appelle la fonction appropriée en fonction de la sélection
@@ -329,21 +342,29 @@ if __name__ == "__main__":
         if nom_dataframe in globals():
             # ligne de trajet picker
             choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
-            ligne_trajet = st.sidebar.selectbox("Sélectionne une Ligne Divia", choix_routes["route_long_name"])
-            index = choix_routes[choix_routes["route_long_name"]==ligne_trajet].index[0]
+            ligne_trajet = st.sidebar.selectbox(
+                "Sélectionne une Ligne Divia", choix_routes["route_long_name"]
+            )
+            index = choix_routes[choix_routes["route_long_name"] == ligne_trajet].index[
+                0
+            ]
             selected_id = choix_routes.loc[index, "route_id"]
 
-            graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe],selected_date)
+            graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe], selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
     elif fonctionnalite == "Graphique Arrêts par Stop":
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
-            ligne_trajet = st.sidebar.selectbox("Sélectionne un arrêt Divia", choix_stop["stop_name"])
-            index = choix_stop[choix_stop["stop_name"]==ligne_trajet].index[0]
+            ligne_trajet = st.sidebar.selectbox(
+                "Sélectionne un arrêt Divia", choix_stop["stop_name"]
+            )
+            index = choix_stop[choix_stop["stop_name"] == ligne_trajet].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
-            graphJourneeByRouteAndStop(selected_id, globals()[nom_dataframe],selected_date)
+            graphJourneeByRouteAndStop(
+                selected_id, globals()[nom_dataframe], selected_date
+            )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
