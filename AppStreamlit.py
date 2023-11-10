@@ -108,7 +108,7 @@ def departEnAvance(data1):
     st.dataframe(df_final)
     return 0
 
-def graphJourneeByRoute(routeId: str, directionId: int, data_in):
+def graphJourneeByRoute(routeId: str, directionId: int, data_in,selected_date):
     print(
         "\nAffichage histogramme des passages sur une route en particulier sur une journée :"
     )
@@ -138,7 +138,11 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
         result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
         )
-    print("Trajet " + str(result["route_long_name"].iloc[0]))
+    try:
+        print("Trajet " + str(result["route_long_name"].iloc[0]))
+    except:
+        st.warning(f"Aucune données trouvées pour la date {selected_date}")
+        return 0
     result = result.sort_values(by="departure_time_reel")
     result = result.drop_duplicates(subset=["trip_id", "stop_id"], keep="last")
 
@@ -227,6 +231,6 @@ if __name__ == "__main__":
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
     elif fonctionnalite == "Tracer Graphique":
         if nom_dataframe in globals():
-            graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe])
+            graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe],selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
