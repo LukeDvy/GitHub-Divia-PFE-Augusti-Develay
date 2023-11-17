@@ -367,12 +367,12 @@ def tpsAttente(stopId: str, data_in, selected_date):
     choixCalcul = st.sidebar.selectbox(
         "Méthode de calcul",
         [
-            "Temps d'attente moyenne",
+            "Temps d'attente moyen",
             "Temps d'attente maximal",
         ],
     )
     agg_funcs={}
-    if choixCalcul == "Temps d'attente moyenne":
+    if choixCalcul == "Temps d'attente moyen":
         agg_funcs = {
             "difference": "mean",
         }
@@ -425,6 +425,75 @@ def tpsAttente(stopId: str, data_in, selected_date):
     st.pyplot(fig)
     return 0
 
+def busTramSimultane(data_in, selected_date):
+    print(
+        "\nAffichage histogramme représentant le nombre de trajets par tranche horaire :"
+    )
+    result=data_in
+    
+    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
+
+    result = result.drop(columns=["stop_id","direction_id","arrival_delay","departure_delay","arrival_time_reel"])
+    if "schedule_relationship" in result.columns:
+    # Supprimer la colonne "schedule_relationship"
+        result = result.drop(columns=["schedule_relationship"])
+    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
+    
+
+    for index, row in result.iterrows():
+        result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
+            row["departure_time_reel"]
+        )
+    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+    result["arrival_hour"] = result["departure_time_reel"].dt.hour
+    result=result.drop(columns=["departure_time_reel"])
+    result=result.drop_duplicates(subset=["trip_id","arrival_hour"])
+    print(result)
+
+    
+
+    
+
+    # affichage titre histogramme
+    st.markdown(
+        f"<h5 style='text-align: center;'>Histogramme trajets par plages horaires</h5>",
+        unsafe_allow_html=True,
+    )
+
+    # Créer les histogrammes avec Matplotlib
+    fig, ax = plt.subplots()
+    # création un histogramme des minutes depuis minuit
+    ax.hist(
+        result["arrival_hour"],
+        bins=range(0, 27),
+        alpha=0.5,
+        rwidth=0.9,
+        align="left",
+        label="Trajets par plages horaires",
+    )
+
+    ax.legend()
+
+    # Set des abscisses
+    abs_labels = [
+        f"{i%24:02d}:00" for i in range(26)
+    ]  # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(
+        range(0, 26)
+    )  # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(
+        abs_labels, rotation=45
+    )  # rotation des labels pour pas qu'ils soient superposés
+
+    ax.set_xlabel("Heure de la journée")
+    ax.set_ylabel("Nombre trajets")
+
+    # affichage du graphique dans Streamlit
+    st.pyplot(fig)
+    return 0
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Fin fonctions, passage section Menu
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -455,6 +524,7 @@ if __name__ == "__main__":
             "Graphique Arrêts par route",
             "Graphique Arrêts par Stop",
             "Temps d'attente",
+            "Nombre trajets par tranche horaire",
         ],
     )
 
@@ -522,3 +592,9 @@ if __name__ == "__main__":
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+    elif fonctionnalite == "Nombre trajets par tranche horaire":
+        if nom_dataframe in globals():
+            busTramSimultane(globals()[nom_dataframe], selected_date)
+        else:
+            st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+            
