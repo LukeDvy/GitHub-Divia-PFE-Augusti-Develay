@@ -106,3 +106,10 @@ Le fichier contenant l'application se nomme `AppStreamlit.py`. Et, nous la lanç
 ```
 
 Ensuite, un URL sera affiché dans la console, permettant l'accès au site créé sur un navigateur.
+
+Pour lancer le site StreamLit depuis le serveur distant, il nécessite d'éxecuter la commande suivante pour accéder au serveur :
+```bash
+  $ gsudo ssh -L 8501:localhost:8501 pfe-divia
+```
+
+Ensuite, il faut lancer l'application StreamLit depuis le serveur. Puis, nous accédons au site depuis le navigateur de la machine en local à l'adresse `http://localhost:8501`.
