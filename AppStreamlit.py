@@ -303,6 +303,113 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
     st.pyplot(fig)
     return 0
 
+def tpsAttente(stopId: str, data_in, selected_date):
+    print(
+        "\nAffichage temps attente entre deux véhicules par plage horaire, à un arrêt en particulier :"
+    )
+    result=data_in
+    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    
+    stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
+    stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
+    stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
+    stopRoute = stopRoute[stopRoute["stop_id"] == stopId]
+    stopRoute = stopRoute.drop(columns=[ 'stop_code','stop_lat', 'stop_lon',
+       'wheelchair_boarding', 'arrival_time', 'departure_time',
+       'stop_sequence', ' pickup_type', 'drop_off_type', 
+       'service_id', 'shape_id', 'trip_headsign', 'trip_short_name',
+       'agency_id', 'route_short_name',  'route_type'])
+    
+    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
+
+    result = result[result["stop_id"] == stopId]
+    result = result.drop(columns=["trip_id","stop_id","direction_id","arrival_delay","departure_delay"])
+    if "schedule_relationship" in result.columns:
+    # Supprimer la colonne "schedule_relationship"
+        result = result.drop(columns=["schedule_relationship"])
+    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
+    
+
+    for index, row in result.iterrows():
+        result.loc[index, "arrival_time_reel"] = datetime.datetime.fromtimestamp(
+            row["arrival_time_reel"]
+        )
+        result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
+            row["departure_time_reel"]
+        )
+
+    try:
+        print("Trajet " + str(stopRoute["route_long_name"].iloc[0]))
+    except:
+        st.warning(f"Aucune données trouvées pour la date {selected_date}")
+        return 0
+    
+    result=result.sort_values(by="arrival_time_reel", ascending=True)
+    print(result)
+
+    differenceArret = pd.DataFrame()
+    differenceArret['arrival_time_reel'] = pd.to_datetime(result['arrival_time_reel'])
+    differenceArret['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+
+    # Calculer la colonne 'difference' représentant la différence de temps entre deux arrêts successifs
+    differenceArret['difference'] = differenceArret['arrival_time_reel'].diff()
+
+    # Remplir la première valeur de 'difference' avec NaT (Not a Time) car il n'y a pas de différence pour la première ligne
+
+    differenceArret = differenceArret.loc[differenceArret['difference'] != pd.Timedelta('00:00:00')]
+    differenceArret = differenceArret.dropna(subset=['difference'])
+
+    differenceArret["arrival_hour"] = differenceArret["arrival_time_reel"].dt.hour
+    differenceArret=differenceArret.drop(columns=['arrival_time_reel','departure_time_reel'])
+    agg_funcs = {
+        "difference": "mean",
+    }
+
+    differenceArret = differenceArret.groupby("arrival_hour").agg(agg_funcs).reset_index()
+    print(differenceArret)
+
+    differenceArret["difference"] = differenceArret["difference"].dt.total_seconds() / 60
+    print(differenceArret)
+
+    # affichage titre histogramme
+    st.markdown(
+        f"<h5 style='text-align: center;'>Histogramme des moyennes de durée d'attente entre deux bus/tramway sur la Ligne "
+        f"{str(stopRoute['route_long_name'].iloc[0])} à l'arrêt "
+        f"{str(stopRoute['stop_name'].iloc[0])}</h5>",
+        unsafe_allow_html=True,
+    )
+
+    # Créer les histogrammes avec Matplotlib
+    fig, ax = plt.subplots()
+    # création un histogramme des minutes depuis minuit
+    ax.bar(
+        differenceArret["arrival_hour"],
+        differenceArret["difference"],
+        align="center",
+        label="Durrée d'attente entre deux bus/tramways",
+    )
+
+    ax.legend()
+
+    # Set des abscisses
+    abs_labels = [
+        f"{i%24:02d}:00" for i in range(26)
+    ]  # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(
+        range(0, 26)
+    )  # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(
+        abs_labels, rotation=45
+    )  # rotation des labels pour pas qu'ils soient superposés
+
+    ax.set_xlabel("Heure de la journée")
+    ax.set_ylabel("Durée d'attente moyenne (minutes)")
+
+    # affichage du graphique dans Streamlit
+    st.pyplot(fig)
+    return 0
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Fin fonctions, passage section Menu
@@ -312,6 +419,19 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
 if __name__ == "__main__":
     st.sidebar.title("Menu")
 
+    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    
+    stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
+    stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
+    stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
+    stopRoute = stopRoute.drop(columns=[ 'stop_code','stop_lat', 'stop_lon',
+       'wheelchair_boarding', 'arrival_time', 'departure_time',
+       'stop_sequence', ' pickup_type', 'drop_off_type', 
+       'service_id', 'shape_id', 'trip_headsign', 'trip_short_name',
+       'agency_id', 'route_short_name', 'trip_id'])
+    stopRoute=stopRoute.drop_duplicates(subset="stop_id")
+    print(stopRoute.columns)
+    print(stopRoute)
     # Ajoute un sélecteur pour choisir la fonctionnalité
     fonctionnalite = st.sidebar.selectbox(
         "Sélectionne une fonctionnalité",
@@ -320,6 +440,7 @@ if __name__ == "__main__":
             "Ligne avec moyenne de départ en avance",
             "Graphique Arrêts par route",
             "Graphique Arrêts par Stop",
+            "Temps d'attente",
         ],
     )
 
@@ -358,12 +479,31 @@ if __name__ == "__main__":
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", choix_stop["stop_name"]
+                "Sélectionne un arrêt Divia", [f"{stop_id} - {stop_name} - {route_id.replace('4-', '')}" for stop_id, stop_name, route_id in zip(stopRoute['stop_name'], stopRoute['route_long_name'], stopRoute['route_id'])]
             )
+            ligne_trajet = ligne_trajet.split('-')[0].strip()
+
             index = choix_stop[choix_stop["stop_name"] == ligne_trajet].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             graphJourneeByRouteAndStop(
+                selected_id, globals()[nom_dataframe], selected_date
+            )
+        else:
+            st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+    elif fonctionnalite == "Temps d'attente":
+        if nom_dataframe in globals():
+            # stop (arrêt) picker
+            choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
+            
+            ligne_trajet = st.sidebar.selectbox(
+                "Sélectionne un arrêt Divia", [f"{stop_id} - {stop_name} - {route_id.replace('4-', '')}" for stop_id, stop_name, route_id in zip(stopRoute['stop_name'], stopRoute['route_long_name'], stopRoute['route_id'])]
+            )
+            ligne_trajet = ligne_trajet.split('-')[0].strip()
+            index = stopRoute[stopRoute["stop_name"] == ligne_trajet].index[0]
+            selected_id = stopRoute.loc[index, "stop_id"]
+
+            tpsAttente(
                 selected_id, globals()[nom_dataframe], selected_date
             )
         else:

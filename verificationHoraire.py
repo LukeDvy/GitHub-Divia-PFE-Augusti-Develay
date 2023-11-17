@@ -330,7 +330,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in):
     return 0
 
 
-graphJourneeByRoute("4-T2", 0, datas_2023_10_27)
+#graphJourneeByRoute("4-T2", 0, datas_2023_10_27)
 
 
 def graphJourneeByRouteAndStop(stopId: str, data_in):
@@ -441,4 +441,102 @@ def graphJourneeByRouteAndStop(stopId: str, data_in):
     return 0
 
 
-graphJourneeByRouteAndStop("4-1457", datas_2023_11_09)
+#graphJourneeByRouteAndStop("4-1457", datas_2023_11_09)
+
+def tpsAttente(stopId: str, data_in):
+    print(
+        "\nAffichage temps attente entre deux véhicules par plage horaire, à un arrêt en particulier :"
+    )
+    result=data_in
+    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    
+    stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
+    stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
+    stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
+    stopRoute = stopRoute[stopRoute["stop_id"] == stopId]
+    stopRoute = stopRoute.drop(columns=[ 'stop_code','stop_lat', 'stop_lon',
+       'wheelchair_boarding', 'arrival_time', 'departure_time',
+       'stop_sequence', ' pickup_type', 'drop_off_type', 
+       'service_id', 'shape_id', 'trip_headsign', 'trip_short_name',
+       'agency_id', 'route_short_name',  'route_type'])
+    
+    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
+
+    result = result[result["stop_id"] == stopId]
+    result = result.loc[result['schedule_relationship'] == 'SCHEDULED']
+    result = result.drop(columns=["trip_id","stop_id","direction_id","arrival_delay","departure_delay","schedule_relationship"])
+    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
+    
+
+    for index, row in result.iterrows():
+        result.loc[index, "arrival_time_reel"] = datetime.datetime.fromtimestamp(
+            row["arrival_time_reel"]
+        )
+        result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
+            row["departure_time_reel"]
+        )
+    print("Trajet " + str(stopRoute["route_long_name"].iloc[0]))
+    result=result.sort_values(by="arrival_time_reel", ascending=True)
+    print(result)
+
+    differenceArret = pd.DataFrame()
+    differenceArret['arrival_time_reel'] = pd.to_datetime(result['arrival_time_reel'])
+    differenceArret['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+
+    # Calculer la colonne 'difference' représentant la différence de temps entre deux arrêts successifs
+    differenceArret['difference'] = differenceArret['arrival_time_reel'].diff()
+
+    # Remplir la première valeur de 'difference' avec NaT (Not a Time) car il n'y a pas de différence pour la première ligne
+
+    differenceArret = differenceArret.loc[differenceArret['difference'] != pd.Timedelta('00:00:00')]
+    differenceArret = differenceArret.dropna(subset=['difference'])
+
+    differenceArret["arrival_hour"] = differenceArret["arrival_time_reel"].dt.hour
+    differenceArret=differenceArret.drop(columns=['arrival_time_reel','departure_time_reel'])
+    agg_funcs = {
+        "difference": "mean",
+    }
+
+    differenceArret = differenceArret.groupby("arrival_hour").agg(agg_funcs).reset_index()
+    print(differenceArret)
+
+    differenceArret["difference"] = differenceArret["difference"].dt.total_seconds() / 60
+    print(differenceArret)
+
+    plt.bar(
+        differenceArret["arrival_hour"],
+        differenceArret["difference"],
+        align="center",
+        label="Durrée d'attente entre deux bus/tramways",
+    )
+
+    plt.legend()
+
+    # configuration l'axe des abscisses pour afficher les heures de la journée
+    ax = plt.gca()
+
+    # Set des abscisses
+    abs_labels = [
+        f"{i%24:02d}:00" for i in range(26)
+    ]  # permet l'affichage correcte des abscisses : ex : 01h avec deux chiffres avec ':02d'. en fstring, car sinon affiche les '{}'
+    ax.set_xticks(
+        range(0, 26)
+    )  # place une abscisses toutes les 60 minutes sur une journée de 24 heures
+    ax.set_xticklabels(
+        abs_labels, rotation=45
+    )  # rotation des labels pour pas qu'ils soient superposés
+
+    plt.xlabel("Heure de la journée")
+    plt.ylabel("Durée d'attente (minutes)")
+    plt.title(
+        "Histogramme des heures de départ sur la ligne "
+        + str(stopRoute["route_long_name"].iloc[0])
+        + "à l'arrêt "
+        + str(stopRoute["stop_name"].iloc[0])
+    )
+
+    plt.show()
+
+tpsAttente("4-1457", datas_2023_11_09)
