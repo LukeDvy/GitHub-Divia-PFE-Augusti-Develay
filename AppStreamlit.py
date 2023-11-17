@@ -308,7 +308,7 @@ def tpsAttente(stopId: str, data_in, selected_date):
         "\nAffichage temps attente entre deux véhicules par plage horaire, à un arrêt en particulier :"
     )
     result=data_in
-    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
     
     stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
     stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
@@ -502,7 +502,7 @@ def busTramSimultane(data_in, selected_date):
 if __name__ == "__main__":
     st.sidebar.title("Menu")
 
-    trips = pd.read_csv("GTFS/trips.txt", delimiter=",")
+    trips = pd.read_csv(f"{nom_GTFS}//trips.txt", delimiter=",")
     
     stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
     stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
