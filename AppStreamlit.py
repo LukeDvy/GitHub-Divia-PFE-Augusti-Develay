@@ -363,9 +363,23 @@ def tpsAttente(stopId: str, data_in, selected_date):
 
     differenceArret["arrival_hour"] = differenceArret["arrival_time_reel"].dt.hour
     differenceArret=differenceArret.drop(columns=['arrival_time_reel','departure_time_reel'])
-    agg_funcs = {
-        "difference": "mean",
-    }
+
+    choixCalcul = st.sidebar.selectbox(
+        "Méthode de calcul",
+        [
+            "Temps d'attente moyenne",
+            "Temps d'attente maximal",
+        ],
+    )
+    agg_funcs={}
+    if choixCalcul == "Temps d'attente moyenne":
+        agg_funcs = {
+            "difference": "mean",
+        }
+    elif choixCalcul == "Temps d'attente maximal":
+        agg_funcs = {
+            "difference": "max",
+        }
 
     differenceArret = differenceArret.groupby("arrival_hour").agg(agg_funcs).reset_index()
     print(differenceArret)
@@ -375,7 +389,7 @@ def tpsAttente(stopId: str, data_in, selected_date):
 
     # affichage titre histogramme
     st.markdown(
-        f"<h5 style='text-align: center;'>Histogramme des moyennes de durée d'attente entre deux bus/tramway sur la Ligne "
+        f"<h5 style='text-align: center;'>Histogramme du {str(choixCalcul)} entre deux bus/tramway sur la Ligne "
         f"{str(stopRoute['route_long_name'].iloc[0])} à l'arrêt "
         f"{str(stopRoute['stop_name'].iloc[0])}</h5>",
         unsafe_allow_html=True,
@@ -405,7 +419,7 @@ def tpsAttente(stopId: str, data_in, selected_date):
     )  # rotation des labels pour pas qu'ils soient superposés
 
     ax.set_xlabel("Heure de la journée")
-    ax.set_ylabel("Durée d'attente moyenne (minutes)")
+    ax.set_ylabel("Durée d'attente (minutes)")
 
     # affichage du graphique dans Streamlit
     st.pyplot(fig)
