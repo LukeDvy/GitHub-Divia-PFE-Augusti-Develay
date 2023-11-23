@@ -494,6 +494,40 @@ def busTramSimultane(data_in, selected_date):
     st.pyplot(fig)
     return 0
 
+def ficheHoraire(stopId: str, data_in, selected_date):
+    print(
+        "\nAffichage fiche horaire à un arrêt en particulier :"
+    )
+    result=data_in
+    
+    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
+    result = result.rename(columns={"arrival_time": "arrival_time_reel"})
+    result = result.rename(columns={"departure_time": "departure_time_reel"})
+
+    result = result[result["stop_id"].astype(str) == str(stopId)]
+
+    result = result.drop(columns=["stop_id","direction_id","arrival_delay","departure_delay","arrival_time_reel"])
+    if "schedule_relationship" in result.columns:
+    # Supprimer la colonne "schedule_relationship"
+        result = result.drop(columns=["schedule_relationship"])
+    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
+    
+
+    for index, row in result.iterrows():
+        result.loc[index, "departure_time_reel"] = datetime.datetime.fromtimestamp(
+            row["departure_time_reel"]
+        )
+    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+    result=result.drop_duplicates(subset=["trip_id"])
+    result = result.drop(columns=["trip_id"])
+    print(result)
+    st.markdown(
+        f"<h5 style='text-align: center;'>Fiche horaire du {selected_date}</h5>",
+        unsafe_allow_html=True,
+    )
+    st.dataframe(result)
+    return 0
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Fin fonctions, passage section Menu
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -525,6 +559,7 @@ if __name__ == "__main__":
             "Graphique Arrêts par Stop",
             "Temps d'attente",
             "Nombre trajets par tranche horaire",
+            "Fiche Horaire par arrêt",
         ],
     )
 
@@ -597,4 +632,20 @@ if __name__ == "__main__":
             busTramSimultane(globals()[nom_dataframe], selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
-            
+    elif fonctionnalite == "Fiche Horaire par arrêt":
+        if nom_dataframe in globals():
+            # stop (arrêt) picker
+            choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
+            ligne_trajet = st.sidebar.selectbox(
+                "Sélectionne un arrêt Divia", [f"{stop_id} - {stop_name} - {route_id.replace('4-', '')}" for stop_id, stop_name, route_id in zip(stopRoute['stop_name'], stopRoute['route_long_name'], stopRoute['route_id'])]
+            )
+            ligne_trajet = ligne_trajet.split('-')[0].strip()
+
+            index = choix_stop[choix_stop["stop_name"] == ligne_trajet].index[0]
+            selected_id = choix_stop.loc[index, "stop_id"]
+
+            ficheHoraire(
+                selected_id, globals()[nom_dataframe], selected_date
+            )
+        else:
+            st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
