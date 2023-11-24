@@ -598,11 +598,21 @@ if __name__ == "__main__":
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", [f"{stop_id} - {stop_name} - {route_id.replace('4-', '')}" for stop_id, stop_name, route_id in zip(stopRoute['stop_name'], stopRoute['route_long_name'], stopRoute['route_id'])]
+                "Sélectionne une Ligne Divia", [f"{route_name} - {route_id.replace('4-', '')}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
             )
             ligne_trajet = ligne_trajet.split('-')[0].strip()
+            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
+                0
+            ]
+            selected_id = stopRoute.loc[index, "route_id"]
 
-            index = choix_stop[choix_stop["stop_name"] == ligne_trajet].index[0]
+            
+            newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
+            stop_choix = st.sidebar.selectbox(
+                "Sélectionne un arrêt Divia", newStopRoute['stop_name']
+            )
+            print(stop_choix)
+            index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             graphJourneeByRouteAndStop(
@@ -637,11 +647,21 @@ if __name__ == "__main__":
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", [f"{stop_id} - {stop_name} - {route_id.replace('4-', '')}" for stop_id, stop_name, route_id in zip(stopRoute['stop_name'], stopRoute['route_long_name'], stopRoute['route_id'])]
+                "Sélectionne une Ligne Divia", [f"{route_name} - {route_id.replace('4-', '')}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
             )
             ligne_trajet = ligne_trajet.split('-')[0].strip()
+            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
+                0
+            ]
+            selected_id = stopRoute.loc[index, "route_id"]
 
-            index = choix_stop[choix_stop["stop_name"] == ligne_trajet].index[0]
+            
+            newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
+            stop_choix = st.sidebar.selectbox(
+                "Sélectionne un arrêt Divia", newStopRoute['stop_name']
+            )
+            print(stop_choix)
+            index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             ficheHoraire(
