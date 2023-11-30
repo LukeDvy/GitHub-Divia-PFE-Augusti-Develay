@@ -590,8 +590,10 @@ if __name__ == "__main__":
             # ligne de trajet picker
             choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", choix_routes["route_long_name"]
+                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
             )
+            numero_ligne = ligne_trajet.split('-')[0].strip()
+            ligne_trajet = ligne_trajet.split('-')[1].strip()
             index = choix_routes[choix_routes["route_long_name"] == ligne_trajet].index[
                 0
             ]
