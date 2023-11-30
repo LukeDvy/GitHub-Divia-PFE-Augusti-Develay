@@ -9,6 +9,7 @@ import pytz
 nom_GTFS = "GTFS_2023_11_07"
 
 # Définition du fuseau horaire CET
+original_timezone = pytz.timezone('UTC')
 cet_timezone = pytz.timezone('CET')
 
 # Chargement des fichiers GTFS dans des df
@@ -37,7 +38,7 @@ class TripParJour:
 
 
 def routeParTripParJour(data_in):
-    date = str(cet_timezone.localize(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0])))[:10]
+    date = str((original_timezone.localize(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))).astimezone(cet_timezone))[:10]
     trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(data_in, trips, on="trip_id", how="inner")
@@ -140,12 +141,12 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in, selected_date):
     )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["arrival_time_reel"]
-        ))
-        result.loc[index, "departure_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        ))).astimezone(cet_timezone)
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
-        ))
+        ))).astimezone(cet_timezone)
     try:
         print("Trajet " + str(result["route_long_name"].iloc[0]))
     except:
@@ -235,12 +236,12 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
     )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["arrival_time_reel"]
-        ))
-        result.loc[index, "departure_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        ))).astimezone(cet_timezone)
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
-        ))
+        ))).astimezone(cet_timezone)
     try:
         print("Trajet " + str(result["route_long_name"].iloc[0]))
     except:
@@ -337,12 +338,12 @@ def tpsAttente(stopId: str, data_in, selected_date):
     
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["arrival_time_reel"]
-        ))
-        result.loc[index, "departure_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        ))).astimezone(cet_timezone)
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
-        ))
+        ))).astimezone(cet_timezone)
 
     try:
         print("Trajet " + str(stopRoute["route_long_name"].iloc[0]))
@@ -447,9 +448,9 @@ def busTramSimultane(data_in, selected_date):
     
 
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
-        ))
+        ))).astimezone(cet_timezone)
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
     result["arrival_hour"] = result["departure_time_reel"].dt.hour
     result=result.drop(columns=["departure_time_reel"])
@@ -518,9 +519,9 @@ def ficheHoraire(stopId: str, data_in, selected_date):
     
 
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = cet_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
             row["departure_time_reel"]
-        ))
+        ))).astimezone(cet_timezone)
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
     result=result.drop_duplicates(subset=["trip_id"])
     result = result.drop(columns=["trip_id"])
