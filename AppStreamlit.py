@@ -213,7 +213,7 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in, selected_date):
     return 0
 
 
-def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
+def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date, numero_ligne):
     print(
         "\nAffichage histogramme des passages à un arrêt en particulier sur une journée :"
     )
@@ -263,7 +263,7 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
     # affichage titre histogramme
     st.markdown(
         f"<h5 style='text-align: center;'>Histogramme des heures de départ sur la Ligne "
-        f"{str(result['route_id'].iloc[0]).replace('4-', '')} à l'arrêt "
+        f"{numero_ligne} à l'arrêt "
         f"{str(result['stop_name'].iloc[0])}</h5>",
         unsafe_allow_html=True,
     )
@@ -308,7 +308,7 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
     st.pyplot(fig)
     return 0
 
-def tpsAttente(stopId: str, data_in, selected_date):
+def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
     print(
         "\nAffichage temps attente entre deux véhicules par plage horaire, à un arrêt en particulier :"
     )
@@ -395,7 +395,7 @@ def tpsAttente(stopId: str, data_in, selected_date):
     # affichage titre histogramme
     st.markdown(
         f"<h5 style='text-align: center;'>Histogramme du {str(choixCalcul)} entre deux bus/tramway sur la Ligne "
-        f"{str(stopRoute['route_long_name'].iloc[0])} à l'arrêt "
+        f"{numero_ligne} à l'arrêt "
         f"{str(stopRoute['stop_name'].iloc[0])}</h5>",
         unsafe_allow_html=True,
     )
@@ -499,7 +499,7 @@ def busTramSimultane(data_in, selected_date):
     st.pyplot(fig)
     return 0
 
-def ficheHoraire(stopId: str, data_in, selected_date):
+def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
     print(
         "\nAffichage fiche horaire à un arrêt en particulier :"
     )
@@ -546,12 +546,14 @@ if __name__ == "__main__":
     stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
     stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
     stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
-    stopRoute = stopRoute.drop(columns=[ 'stop_code','stop_lat', 'stop_lon',
+    stopRoute = stopRoute.drop(columns=[ 'stop_lat', 'stop_lon',
        'wheelchair_boarding', 'arrival_time', 'departure_time',
        'stop_sequence', ' pickup_type', 'drop_off_type', 
        'service_id', 'shape_id', 'trip_headsign', 'trip_short_name',
        'agency_id', 'route_short_name', 'trip_id'])
     stopRoute=stopRoute.drop_duplicates(subset="stop_id")
+    stopRoute=stopRoute.sort_values(by="route_id")
+
     print(stopRoute.columns)
     print(stopRoute)
     # Ajoute un sélecteur pour choisir la fonctionnalité
@@ -603,9 +605,10 @@ if __name__ == "__main__":
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", [f"{route_name} - {route_id.replace('4-', '')}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
+                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
             )
-            ligne_trajet = ligne_trajet.split('-')[0].strip()
+            numero_ligne = ligne_trajet.split('-')[0].strip()
+            ligne_trajet = ligne_trajet.split('-')[1].strip()
             index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
                 0
             ]
@@ -613,15 +616,18 @@ if __name__ == "__main__":
 
             
             newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
+            newStopRoute=newStopRoute.sort_values(by="stop_name")
             stop_choix = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", newStopRoute['stop_name']
+                "Sélectionne un arrêt Divia", [f"{stop_name} - {stop_code}" for stop_name, stop_code in zip(newStopRoute['stop_name'], newStopRoute['stop_code'])]
             )
+            stop_choix = stop_choix.split('-')[0].strip()
+
             print(stop_choix)
             index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             graphJourneeByRouteAndStop(
-                selected_id, globals()[nom_dataframe], selected_date
+                selected_id, globals()[nom_dataframe], selected_date, numero_ligne
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
@@ -629,16 +635,30 @@ if __name__ == "__main__":
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
-            
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", [f"{stop_id} - {stop_name} - {route_id.replace('4-', '')}" for stop_id, stop_name, route_id in zip(stopRoute['stop_name'], stopRoute['route_long_name'], stopRoute['route_id'])]
+                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
             )
-            ligne_trajet = ligne_trajet.split('-')[0].strip()
-            index = stopRoute[stopRoute["stop_name"] == ligne_trajet].index[0]
-            selected_id = stopRoute.loc[index, "stop_id"]
+            numero_ligne = ligne_trajet.split('-')[0].strip()
+            ligne_trajet = ligne_trajet.split('-')[1].strip()
+            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
+                0
+            ]
+            selected_id = stopRoute.loc[index, "route_id"]
+
+            
+            newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
+            newStopRoute=newStopRoute.sort_values(by="stop_name")
+            stop_choix = st.sidebar.selectbox(
+                "Sélectionne un arrêt Divia", [f"{stop_name} - {stop_code}" for stop_name, stop_code in zip(newStopRoute['stop_name'], newStopRoute['stop_code'])]
+            )
+            stop_choix = stop_choix.split('-')[0].strip()
+
+            print(stop_choix)
+            index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
+            selected_id = choix_stop.loc[index, "stop_id"]
 
             tpsAttente(
-                selected_id, globals()[nom_dataframe], selected_date
+                selected_id, globals()[nom_dataframe], selected_date, numero_ligne
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
@@ -652,9 +672,10 @@ if __name__ == "__main__":
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", [f"{route_name} - {route_id.replace('4-', '')}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
+                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
             )
-            ligne_trajet = ligne_trajet.split('-')[0].strip()
+            numero_ligne = ligne_trajet.split('-')[0].strip()
+            ligne_trajet = ligne_trajet.split('-')[1].strip()
             index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
                 0
             ]
@@ -662,15 +683,18 @@ if __name__ == "__main__":
 
             
             newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
+            newStopRoute=newStopRoute.sort_values(by="stop_name")
             stop_choix = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", newStopRoute['stop_name']
+                "Sélectionne un arrêt Divia", [f"{stop_name} - {stop_code}" for stop_name, stop_code in zip(newStopRoute['stop_name'], newStopRoute['stop_code'])]
             )
+            stop_choix = stop_choix.split('-')[0].strip()
+
             print(stop_choix)
             index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             ficheHoraire(
-                selected_id, globals()[nom_dataframe], selected_date
+                selected_id, globals()[nom_dataframe], selected_date, numero_ligne
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
