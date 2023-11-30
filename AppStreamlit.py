@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import datetime
+from datetime import datetime, timedelta
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -38,7 +38,7 @@ class TripParJour:
 
 
 def routeParTripParJour(data_in):
-    date = str((original_timezone.localize(datetime.datetime.fromtimestamp(data_in["departure_time"].iloc[0]))).astimezone(cet_timezone))[:10]
+    date = str((original_timezone.localize(datetime.fromtimestamp(data_in["departure_time"].iloc[0]))).astimezone(cet_timezone))[:10]
     trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(data_in, trips, on="trip_id", how="inner")
@@ -141,10 +141,10 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in, selected_date):
     )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["arrival_time_reel"]
         ))).astimezone(cet_timezone)
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
         ))).astimezone(cet_timezone)
     try:
@@ -236,10 +236,10 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date):
     )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["arrival_time_reel"]
         ))).astimezone(cet_timezone)
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
         ))).astimezone(cet_timezone)
     try:
@@ -338,10 +338,10 @@ def tpsAttente(stopId: str, data_in, selected_date):
     
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["arrival_time_reel"]
         ))).astimezone(cet_timezone)
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
         ))).astimezone(cet_timezone)
 
@@ -448,7 +448,7 @@ def busTramSimultane(data_in, selected_date):
     
 
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
         ))).astimezone(cet_timezone)
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
@@ -519,7 +519,7 @@ def ficheHoraire(stopId: str, data_in, selected_date):
     
 
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
         ))).astimezone(cet_timezone)
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
@@ -570,7 +570,7 @@ if __name__ == "__main__":
 
     # date picker
     selected_date = st.sidebar.date_input(
-        "Sélectionner une date", datetime.datetime(2023, 10, 27)
+        "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
     )
     date_str = selected_date.strftime("%Y_%m_%d")
     nom_dataframe = f"datas_{date_str}"
