@@ -558,6 +558,7 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
 # Menu pour choisir la fonction à utiliser
 if __name__ == "__main__":
+    st.set_page_config(page_title="Datas App Divia PFE")
     st.sidebar.title("Menu")
 
     trips = pd.read_csv(f"{nom_GTFS}//trips.txt", delimiter=",")
