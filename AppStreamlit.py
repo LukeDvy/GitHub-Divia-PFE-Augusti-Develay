@@ -113,7 +113,7 @@ def departEnAvance(data1):
                 + str(int((-1) * row["departure_delay_min"]))
                 + " secondes.\n"
             )
-    st.dataframe(df_final)
+    st.dataframe(df_final, hide_index=True)
     return 0
 
 
@@ -500,37 +500,56 @@ def busTramSimultane(data_in, selected_date):
     return 0
 
 def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
-    print(
-        "\nAffichage fiche horaire à un arrêt en particulier :"
-    )
-    result=data_in
+    print("\nAffichage fiche horaire à un arrêt en particulier :")
+    result = data_in
     
-    # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
     result = result.rename(columns={"arrival_time": "arrival_time_reel"})
     result = result.rename(columns={"departure_time": "departure_time_reel"})
 
+    # Filtrage du stop choisi
     result = result[result["stop_id"].astype(str) == str(stopId)]
 
-    result = result.drop(columns=["stop_id","direction_id","arrival_delay","departure_delay","arrival_time_reel"])
+    result = result.drop(columns=["stop_id","direction_id","arrival_delay","arrival_time_reel"])
     if "schedule_relationship" in result.columns:
-    # Supprimer la colonne "schedule_relationship"
+        # Supprimer la colonne "schedule_relationship"
         result = result.drop(columns=["schedule_relationship"])
-    # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
     
-
+    # Modification avec le fuseau horaire CET
     for index, row in result.iterrows():
         result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
         ))).astimezone(cet_timezone)
+    
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
-    result=result.drop_duplicates(subset=["trip_id"])
+    result = result.drop_duplicates(subset=["trip_id"])
     result = result.drop(columns=["trip_id"])
-    print(result)
+    
+    # Création d'un DataFrame pour les minutes de passage
+    minutes_data = pd.DataFrame({
+        'Heures': result['departure_time_reel'].dt.hour,
+        'Minutes': result['departure_time_reel'].dt.minute
+    })
+    minutes_data=minutes_data.drop_duplicates(subset=["Heures","Minutes"])
+    # Création d'un tableau avec les minutes de passage séparées par des virgules
+    minutes_table = minutes_data.groupby('Heures')['Minutes'].apply(lambda x: ', '.join(x.astype(str))).reset_index()
+
+    # Affichage du DataFrame dans Streamlit
     st.markdown(
         f"<h5 style='text-align: center;'>Fiche horaire du {selected_date}</h5>",
         unsafe_allow_html=True,
     )
-    st.dataframe(result)
+    st.dataframe(minutes_table, hide_index=True)
+    
+    # Création du graphique d'histogramme pour la fréquence de passage par heure
+    fig_freq, ax_freq = plt.subplots()
+    ax_freq.hist(result['departure_time_reel'].dt.hour, bins=range(24), align="left", rwidth=0.8)
+    ax_freq.set_xticks(range(24))
+    ax_freq.set_xlabel("Heures de la journée")
+    ax_freq.set_ylabel("Fréquence de passage")
+    ax_freq.set_title(f"Fréquence de passage par heure pour la ligne {numero_ligne}")
+
+    # Affichage du graphique d'histogramme dans Streamlit
+    st.pyplot(fig_freq)
     return 0
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -749,5 +768,5 @@ if __name__ == "__main__":
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         with st.expander("Informations"):
-            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée.")
+            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée, ainsi qu'un graphique permettant de voir la fréquence de passage sur chaque tranche horaire.")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L502)")
