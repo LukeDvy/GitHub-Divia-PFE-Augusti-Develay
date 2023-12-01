@@ -542,7 +542,7 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
     
     # Création du graphique d'histogramme pour la fréquence de passage par heure
     fig_freq, ax_freq = plt.subplots()
-    ax_freq.hist(result['departure_time_reel'].dt.hour, bins=range(24), align="left", rwidth=0.8)
+    ax_freq.hist(minutes_data['Heures'], bins=range(24), align="left", rwidth=0.8)
     ax_freq.set_xticks(range(24))
     ax_freq.set_xlabel("Heures de la journée")
     ax_freq.set_ylabel("Fréquence de passage")
