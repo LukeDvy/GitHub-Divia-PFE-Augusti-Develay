@@ -606,12 +606,20 @@ if __name__ == "__main__":
         st.markdown(
             "N'hésitez pas à explorer les différentes fonctionnalités pour découvrir les analyses et les visualisations proposées."
         )
+
+        st.markdown(
+            "Pour chaque fonctionnalité, un bouton `Informations`, situé en bas de la page, affiche des détails sur la forme du résultat affiché, la méthode de calcul, ainsi qu'un lien menant vers le code associé à la fonctionnalité choisie."
+        )
     # Appelle la fonction appropriée en fonction de la sélection
     elif fonctionnalite == "Ligne avec moyenne de départ en avance":
         if nom_dataframe in globals():
             departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+        # Informations de cette fonctionnalité
+        with st.expander("Informations"):
+            st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur tous leurs arrêts confondus.")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L97)")
     elif fonctionnalite == "Graphique Arrêts par route":
         if nom_dataframe in globals():
             # ligne de trajet picker
@@ -629,6 +637,10 @@ if __name__ == "__main__":
             graphJourneeByRoute(selected_id, 0, globals()[nom_dataframe], selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+        # Informations de cette fonctionnalité
+        with st.expander("Informations"):
+            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique).")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L120)")
     elif fonctionnalite == "Graphique Arrêts par Stop":
         if nom_dataframe in globals():
             # stop (arrêt) picker
@@ -660,6 +672,9 @@ if __name__ == "__main__":
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+        with st.expander("Informations"):
+            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway, ainsi qu'un arrêt particulier dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique).")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L216)")
     elif fonctionnalite == "Temps d'attente":
         if nom_dataframe in globals():
             # stop (arrêt) picker
@@ -691,11 +706,17 @@ if __name__ == "__main__":
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+        with st.expander("Informations"):
+            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application, une troisième liste déroulante permet de choisir la méthode de calcul, que ce soit le temps d'attente moyen ou le temps d'attente maximal. Ensuite, un graphique affiche les temps d'attente par tranches horaires, que ce soit pour la moyenne ou le maximum.")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L311)")
     elif fonctionnalite == "Nombre trajets par tranche horaire":
         if nom_dataframe in globals():
             busTramSimultane(globals()[nom_dataframe], selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+        with st.expander("Informations"):
+            st.markdown("Pour une date sélectionnée, un graphique affiche, par tranche horaire, le nombre de trajets (Bus ou Tramway) distincts, identifiés par leur `trip_id`.")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L433)")
     elif fonctionnalite == "Fiche Horaire par arrêt":
         if nom_dataframe in globals():
             # stop (arrêt) picker
@@ -727,3 +748,6 @@ if __name__ == "__main__":
             )
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
+        with st.expander("Informations"):
+            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée.")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L502)")
