@@ -45,8 +45,6 @@ def routeParTripParJour(data_in):
     result = pd.merge(result, routes, on="route_id", how="inner")
     result = result.drop(
         columns=[
-            "arrival_time",
-            "departure_time",
             "stop_id",
             "direction_id",
             "service_id",
@@ -55,8 +53,31 @@ def routeParTripParJour(data_in):
             "trip_short_name",
             "agency_id",
             "route_short_name",
+            "departure_time",
         ]
     )
+
+    for index, row in result.iterrows():
+        result.loc[index, "arrival_time"] = (original_timezone.localize(datetime.fromtimestamp(
+            row["arrival_time"]
+        ))).astimezone(cet_timezone)
+
+    result['arrival_time'] = pd.to_datetime(result['arrival_time'])
+
+
+    result['arrival_time'] = result['arrival_time'].dt.hour
+    print(result['arrival_time'])
+    for index, row in result.iterrows():
+        if int(row["arrival_time"]) < 7:
+            result.loc[index, "periode_journee"] = "Nuit"
+        elif int(row["arrival_time"]) >= 7 & int(row["arrival_time"]) < 12:
+            result.loc[index, "periode_journee"] = "Matin"
+        elif int(row["arrival_time"]) >= 12 & int(row["arrival_time"]) < 18:
+            result.loc[index, "periode_journee"] = "Après Midi"
+        else:
+            result.loc[index, "periode_journee"] = "Soir"
+
+    
     # columns restantes : [trip_id,arrival_delay,departure_delay,route_id,route_long_name]
     result = result.rename(columns={"arrival_delay": "arrival_delay_mean"})
     result = result.rename(columns={"departure_delay": "departure_delay_mean"})
@@ -77,8 +98,8 @@ def routeParTripParJour(data_in):
         "route_type": "first",
     }
 
-    # utilisation de  la méthode .groupby() pour regrouper par "route_id" et appliquer les opérations spécifiée
-    result = result.groupby("route_id").agg(agg_funcs).reset_index()
+    # utilisation de  la méthode .groupby() pour regrouper par "route_id" et appliquer les opérations spécifiée, et selon la période de la journée
+    result = result.groupby(["route_id","periode_journee"]).agg(agg_funcs).reset_index()
     result = result.rename(columns={"trip_id": "trip_id_count"})
 
     # traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
