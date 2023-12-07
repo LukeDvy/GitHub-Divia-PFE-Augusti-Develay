@@ -516,9 +516,9 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
     
     # Modification avec le fuseau horaire CET
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = datetime.fromtimestamp(
+        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
             row["departure_time_reel"]
-        )
+        ))).astimezone(cet_timezone)
     
     result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
     result = result.drop_duplicates(subset=["trip_id"])
