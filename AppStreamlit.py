@@ -69,13 +69,13 @@ def routeParTripParJour(data_in):
     print(result['arrival_time'])
     for index, row in result.iterrows():
         if int(row["arrival_time"]) < 7:
-            result.loc[index, "periode_journee"] = "Nuit"
+            result.loc[index, "periode_journee"] = "La Nuit"
         elif int(row["arrival_time"]) >= 7 & int(row["arrival_time"]) < 12:
-            result.loc[index, "periode_journee"] = "Matin"
+            result.loc[index, "periode_journee"] = "Le Matin"
         elif int(row["arrival_time"]) >= 12 & int(row["arrival_time"]) < 18:
-            result.loc[index, "periode_journee"] = "Après Midi"
+            result.loc[index, "periode_journee"] = "L'Après Midi"
         else:
-            result.loc[index, "periode_journee"] = "Soir"
+            result.loc[index, "periode_journee"] = "Le Soir"
 
     
     # columns restantes : [trip_id,arrival_delay,departure_delay,route_id,route_long_name]
@@ -121,8 +121,9 @@ def departEnAvance(data1):
     for index, row in data1.data.iterrows():
         if row["departure_delay_mean"] < 0:
             df_final.loc[index] = row
-            print(
-                "Le "
+            st.markdown(
+                str(row["periode_journee"])
+                + " du "
                 + data1.date
                 + " le trajet "
                 + str(row["route_long_name"])
@@ -134,6 +135,7 @@ def departEnAvance(data1):
                 + str(int((-1) * row["departure_delay_min"]))
                 + " secondes.\n"
             )
+    st.markdown("#### Détail du dataframe :")
     st.dataframe(df_final, hide_index=True)
     return 0
 
@@ -660,7 +662,8 @@ if __name__ == "__main__":
         # Informations de cette fonctionnalité
         with st.expander("Informations"):
             st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur tous leurs arrêts confondus.")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L97)")
+            st.markdown("Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = \"Nuit\", [07h - 12h] = \"Matin\", [12h - 18h] = \"Après Midi\", [18h - 00h] = \"Soir\".")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)")
     elif fonctionnalite == "Graphique Arrêts par route":
         if nom_dataframe in globals():
             # ligne de trajet picker
