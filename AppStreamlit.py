@@ -610,15 +610,9 @@ if __name__ == "__main__":
             "Temps d'attente",
             "Nombre trajets par tranche horaire",
             "Fiche Horaire par arrêt",
+            "Tendance hebdomadaire : Ligne avec moyenne de départ en avance",
         ],
     )
-
-    # date picker
-    selected_date = st.sidebar.date_input(
-        "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
-    )
-    date_str = selected_date.strftime("%Y_%m_%d")
-    nom_dataframe = f"datas_{date_str}"
 
     if fonctionnalite == "Accueil":
         st.header("Bienvenue sur l'Application Divia PFE")
@@ -655,6 +649,13 @@ if __name__ == "__main__":
         )
     # Appelle la fonction appropriée en fonction de la sélection
     elif fonctionnalite == "Ligne avec moyenne de départ en avance":
+        # date picker
+        selected_date = st.sidebar.date_input(
+            "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
+        )
+        date_str = selected_date.strftime("%Y_%m_%d")
+        nom_dataframe = f"datas_{date_str}"
+
         if nom_dataframe in globals():
             departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
         else:
@@ -665,6 +666,13 @@ if __name__ == "__main__":
             st.markdown("Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = \"Nuit\", [07h - 12h] = \"Matin\", [12h - 18h] = \"Après Midi\", [18h - 00h] = \"Soir\".")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)")
     elif fonctionnalite == "Graphique Arrêts par route":
+        # date picker
+        selected_date = st.sidebar.date_input(
+            "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
+        )
+        date_str = selected_date.strftime("%Y_%m_%d")
+        nom_dataframe = f"datas_{date_str}"
+        
         if nom_dataframe in globals():
             # ligne de trajet picker
             choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
@@ -686,6 +694,13 @@ if __name__ == "__main__":
             st.markdown("Après avoir sélectionné une ligne de bus ou de tramway dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique).")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L120)")
     elif fonctionnalite == "Graphique Arrêts par Stop":
+        # date picker
+        selected_date = st.sidebar.date_input(
+            "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
+        )
+        date_str = selected_date.strftime("%Y_%m_%d")
+        nom_dataframe = f"datas_{date_str}"
+        
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
@@ -720,6 +735,13 @@ if __name__ == "__main__":
             st.markdown("Après avoir sélectionné une ligne de bus ou de tramway, ainsi qu'un arrêt particulier dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique).")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L216)")
     elif fonctionnalite == "Temps d'attente":
+        # date picker
+        selected_date = st.sidebar.date_input(
+            "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
+        )
+        date_str = selected_date.strftime("%Y_%m_%d")
+        nom_dataframe = f"datas_{date_str}"
+        
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
@@ -754,6 +776,13 @@ if __name__ == "__main__":
             st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application, une troisième liste déroulante permet de choisir la méthode de calcul, que ce soit le temps d'attente moyen ou le temps d'attente maximal. Ensuite, un graphique affiche les temps d'attente par tranches horaires, que ce soit pour la moyenne ou le maximum.")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L311)")
     elif fonctionnalite == "Nombre trajets par tranche horaire":
+        # date picker
+        selected_date = st.sidebar.date_input(
+            "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
+        )
+        date_str = selected_date.strftime("%Y_%m_%d")
+        nom_dataframe = f"datas_{date_str}"
+        
         if nom_dataframe in globals():
             busTramSimultane(globals()[nom_dataframe], selected_date)
         else:
@@ -762,6 +791,13 @@ if __name__ == "__main__":
             st.markdown("Pour une date sélectionnée, un graphique affiche, par tranche horaire, le nombre de trajets (Bus ou Tramway) distincts, identifiés par leur `trip_id`.")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L433)")
     elif fonctionnalite == "Fiche Horaire par arrêt":
+        # date picker
+        selected_date = st.sidebar.date_input(
+            "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
+        )
+        date_str = selected_date.strftime("%Y_%m_%d")
+        nom_dataframe = f"datas_{date_str}"
+        
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
@@ -795,3 +831,21 @@ if __name__ == "__main__":
         with st.expander("Informations"):
             st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée, ainsi qu'un graphique permettant de voir la fréquence de passage sur chaque tranche horaire.")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L502)")
+    
+    elif fonctionnalite == "Tendance hebdomadaire : Ligne avec moyenne de départ en avance":
+        dataframes_list = []
+        for i in range(1, 8):  # Commencer depuis hier, jusqu'à 1 semaine passée
+            date = datetime.now() - timedelta(days=i)
+            date_str = date.strftime("%Y_%m_%d")
+            nom_dataframe = f"datas_{date_str}"
+            df_jour = globals()[nom_dataframe] # Code pour récupérer le DataFrame du jour date
+            dataframes_list.append(df_jour)
+
+
+        df_7lastday = pd.concat(dataframes_list, ignore_index=True)
+        departEnAvance(routeParTripParJour(df_7lastday))
+        # Informations de cette fonctionnalité
+        with st.expander("Informations"):
+            st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur tous leurs arrêts confondus.")
+            st.markdown("Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = \"Nuit\", [07h - 12h] = \"Matin\", [12h - 18h] = \"Après Midi\", [18h - 00h] = \"Soir\".")
+            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)")
