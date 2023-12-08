@@ -9,8 +9,8 @@ import pytz
 nom_GTFS = "GTFS_2023_11_07"
 
 # Définition du fuseau horaire CET
-original_timezone = pytz.timezone('UTC')
-cet_timezone = pytz.timezone('CET')
+original_timezone = pytz.timezone("UTC")
+cet_timezone = pytz.timezone("CET")
 
 # Chargement des fichiers GTFS dans des df
 stops = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
@@ -38,7 +38,13 @@ class TripParJour:
 
 
 def routeParTripParJour(data_in):
-    date = str((original_timezone.localize(datetime.fromtimestamp(data_in["departure_time"].iloc[0]))).astimezone(cet_timezone))[:10]
+    date = str(
+        (
+            original_timezone.localize(
+                datetime.fromtimestamp(data_in["departure_time"].iloc[0])
+            )
+        ).astimezone(cet_timezone)
+    )[:10]
     trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
     trips = trips.drop(columns="direction_id")
     result = pd.merge(data_in, trips, on="trip_id", how="inner")
@@ -58,15 +64,14 @@ def routeParTripParJour(data_in):
     )
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["arrival_time"]
-        ))).astimezone(cet_timezone)
+        result.loc[index, "arrival_time"] = (
+            original_timezone.localize(datetime.fromtimestamp(row["arrival_time"]))
+        ).astimezone(cet_timezone)
 
-    result['arrival_time'] = pd.to_datetime(result['arrival_time'])
+    result["arrival_time"] = pd.to_datetime(result["arrival_time"])
 
-
-    result['arrival_time'] = result['arrival_time'].dt.hour
-    print(result['arrival_time'])
+    result["arrival_time"] = result["arrival_time"].dt.hour
+    print(result["arrival_time"])
     for index, row in result.iterrows():
         if int(row["arrival_time"]) < 7:
             result.loc[index, "periode_journee"] = "La Nuit"
@@ -77,7 +82,6 @@ def routeParTripParJour(data_in):
         else:
             result.loc[index, "periode_journee"] = "Le Soir"
 
-    
     # columns restantes : [trip_id,arrival_delay,departure_delay,route_id,route_long_name]
     result = result.rename(columns={"arrival_delay": "arrival_delay_mean"})
     result = result.rename(columns={"departure_delay": "departure_delay_mean"})
@@ -99,7 +103,9 @@ def routeParTripParJour(data_in):
     }
 
     # utilisation de  la méthode .groupby() pour regrouper par "route_id" et appliquer les opérations spécifiée, et selon la période de la journée
-    result = result.groupby(["route_id","periode_journee"]).agg(agg_funcs).reset_index()
+    result = (
+        result.groupby(["route_id", "periode_journee"]).agg(agg_funcs).reset_index()
+    )
     result = result.rename(columns={"trip_id": "trip_id_count"})
 
     # traduction de la colonne route_type de int à string : 0=Tram, 3=Bus
@@ -119,7 +125,7 @@ def departEnAvance(data1):
     print("\nFonction énumérant les lignes parties en avances :")
     df_final = pd.DataFrame(columns=data1.data.columns)
     for index, row in data1.data.iterrows():
-        if row["departure_delay_mean"] < 0:
+        if row["departure_delay_mean"] < 15:  # marge de 15 secondes de retard acceptée
             df_final.loc[index] = row
             st.markdown(
                 str(row["periode_journee"])
@@ -162,12 +168,14 @@ def graphJourneeByRoute(routeId: str, directionId: int, data_in, selected_date):
     )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["arrival_time_reel"]
-        ))).astimezone(cet_timezone)
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["departure_time_reel"]
-        ))).astimezone(cet_timezone)
+        result.loc[index, "arrival_time_reel"] = (
+            original_timezone.localize(datetime.fromtimestamp(row["arrival_time_reel"]))
+        ).astimezone(cet_timezone)
+        result.loc[index, "departure_time_reel"] = (
+            original_timezone.localize(
+                datetime.fromtimestamp(row["departure_time_reel"])
+            )
+        ).astimezone(cet_timezone)
     try:
         print("Trajet " + str(result["route_long_name"].iloc[0]))
     except:
@@ -257,12 +265,14 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date, numero_ligne
     )  # essayer right pour afficher les données manquantes dans GTFS-RT
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["arrival_time_reel"]
-        ))).astimezone(cet_timezone)
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["departure_time_reel"]
-        ))).astimezone(cet_timezone)
+        result.loc[index, "arrival_time_reel"] = (
+            original_timezone.localize(datetime.fromtimestamp(row["arrival_time_reel"]))
+        ).astimezone(cet_timezone)
+        result.loc[index, "departure_time_reel"] = (
+            original_timezone.localize(
+                datetime.fromtimestamp(row["departure_time_reel"])
+            )
+        ).astimezone(cet_timezone)
     try:
         print("Trajet " + str(result["route_long_name"].iloc[0]))
     except:
@@ -329,66 +339,97 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date, numero_ligne
     st.pyplot(fig)
     return 0
 
+
 def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
     print(
         "\nAffichage temps attente entre deux véhicules par plage horaire, à un arrêt en particulier :"
     )
-    result=data_in
+    result = data_in
     trips = pd.read_csv(f"{nom_GTFS}/trips.txt", delimiter=",")
-    
+
     stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
     stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
     stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
     stopRoute = stopRoute[stopRoute["stop_id"] == stopId]
-    stopRoute = stopRoute.drop(columns=[ 'stop_code','stop_lat', 'stop_lon',
-       'wheelchair_boarding', 'arrival_time', 'departure_time',
-       'stop_sequence', ' pickup_type', 'drop_off_type', 
-       'service_id', 'shape_id', 'trip_headsign', 'trip_short_name',
-       'agency_id', 'route_short_name',  'route_type'])
-    
+    stopRoute = stopRoute.drop(
+        columns=[
+            "stop_code",
+            "stop_lat",
+            "stop_lon",
+            "wheelchair_boarding",
+            "arrival_time",
+            "departure_time",
+            "stop_sequence",
+            " pickup_type",
+            "drop_off_type",
+            "service_id",
+            "shape_id",
+            "trip_headsign",
+            "trip_short_name",
+            "agency_id",
+            "route_short_name",
+            "route_type",
+        ]
+    )
+
     # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
     result = result.rename(columns={"arrival_time": "arrival_time_reel"})
     result = result.rename(columns={"departure_time": "departure_time_reel"})
 
     result = result[result["stop_id"] == stopId]
-    result = result.drop(columns=["trip_id","stop_id","direction_id","arrival_delay","departure_delay"])
+    result = result.drop(
+        columns=[
+            "trip_id",
+            "stop_id",
+            "direction_id",
+            "arrival_delay",
+            "departure_delay",
+        ]
+    )
     if "schedule_relationship" in result.columns:
-    # Supprimer la colonne "schedule_relationship"
+        # Supprimer la colonne "schedule_relationship"
         result = result.drop(columns=["schedule_relationship"])
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
-    
 
     for index, row in result.iterrows():
-        result.loc[index, "arrival_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["arrival_time_reel"]
-        ))).astimezone(cet_timezone)
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["departure_time_reel"]
-        ))).astimezone(cet_timezone)
+        result.loc[index, "arrival_time_reel"] = (
+            original_timezone.localize(datetime.fromtimestamp(row["arrival_time_reel"]))
+        ).astimezone(cet_timezone)
+        result.loc[index, "departure_time_reel"] = (
+            original_timezone.localize(
+                datetime.fromtimestamp(row["departure_time_reel"])
+            )
+        ).astimezone(cet_timezone)
 
     try:
         print("Trajet " + str(stopRoute["route_long_name"].iloc[0]))
     except:
         st.warning(f"Aucune données trouvées pour la date {selected_date}")
         return 0
-    
-    result=result.sort_values(by="arrival_time_reel", ascending=True)
+
+    result = result.sort_values(by="arrival_time_reel", ascending=True)
     print(result)
 
     differenceArret = pd.DataFrame()
-    differenceArret['arrival_time_reel'] = pd.to_datetime(result['arrival_time_reel'])
-    differenceArret['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+    differenceArret["arrival_time_reel"] = pd.to_datetime(result["arrival_time_reel"])
+    differenceArret["departure_time_reel"] = pd.to_datetime(
+        result["departure_time_reel"]
+    )
 
     # Calculer la colonne 'difference' représentant la différence de temps entre deux arrêts successifs
-    differenceArret['difference'] = differenceArret['arrival_time_reel'].diff()
+    differenceArret["difference"] = differenceArret["arrival_time_reel"].diff()
 
     # Remplir la première valeur de 'difference' avec NaT (Not a Time) car il n'y a pas de différence pour la première ligne
 
-    differenceArret = differenceArret.loc[differenceArret['difference'] != pd.Timedelta('00:00:00')]
-    differenceArret = differenceArret.dropna(subset=['difference'])
+    differenceArret = differenceArret.loc[
+        differenceArret["difference"] != pd.Timedelta("00:00:00")
+    ]
+    differenceArret = differenceArret.dropna(subset=["difference"])
 
     differenceArret["arrival_hour"] = differenceArret["arrival_time_reel"].dt.hour
-    differenceArret=differenceArret.drop(columns=['arrival_time_reel','departure_time_reel'])
+    differenceArret = differenceArret.drop(
+        columns=["arrival_time_reel", "departure_time_reel"]
+    )
 
     choixCalcul = st.sidebar.selectbox(
         "Méthode de calcul",
@@ -397,7 +438,7 @@ def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
             "Temps d'attente maximal",
         ],
     )
-    agg_funcs={}
+    agg_funcs = {}
     if choixCalcul == "Temps d'attente moyen":
         agg_funcs = {
             "difference": "mean",
@@ -407,10 +448,14 @@ def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
             "difference": "max",
         }
 
-    differenceArret = differenceArret.groupby("arrival_hour").agg(agg_funcs).reset_index()
+    differenceArret = (
+        differenceArret.groupby("arrival_hour").agg(agg_funcs).reset_index()
+    )
     print(differenceArret)
 
-    differenceArret["difference"] = differenceArret["difference"].dt.total_seconds() / 60
+    differenceArret["difference"] = (
+        differenceArret["difference"].dt.total_seconds() / 60
+    )
     print(differenceArret)
 
     # affichage titre histogramme
@@ -451,36 +496,42 @@ def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
     st.pyplot(fig)
     return 0
 
+
 def busTramSimultane(data_in, selected_date):
     print(
         "\nAffichage histogramme représentant le nombre de trajets par tranche horaire :"
     )
-    result=data_in
-    
+    result = data_in
+
     # rename colonne pour ne pas avoir de collisions avec les colonnes d'heures prévues
     result = result.rename(columns={"arrival_time": "arrival_time_reel"})
     result = result.rename(columns={"departure_time": "departure_time_reel"})
 
-    result = result.drop(columns=["stop_id","direction_id","arrival_delay","departure_delay","arrival_time_reel"])
+    result = result.drop(
+        columns=[
+            "stop_id",
+            "direction_id",
+            "arrival_delay",
+            "departure_delay",
+            "arrival_time_reel",
+        ]
+    )
     if "schedule_relationship" in result.columns:
-    # Supprimer la colonne "schedule_relationship"
+        # Supprimer la colonne "schedule_relationship"
         result = result.drop(columns=["schedule_relationship"])
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
-    
 
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["departure_time_reel"]
-        ))).astimezone(cet_timezone)
-    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+        result.loc[index, "departure_time_reel"] = (
+            original_timezone.localize(
+                datetime.fromtimestamp(row["departure_time_reel"])
+            )
+        ).astimezone(cet_timezone)
+    result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
     result["arrival_hour"] = result["departure_time_reel"].dt.hour
-    result=result.drop(columns=["departure_time_reel"])
-    result=result.drop_duplicates(subset=["trip_id","arrival_hour"])
+    result = result.drop(columns=["departure_time_reel"])
+    result = result.drop_duplicates(subset=["trip_id", "arrival_hour"])
     print(result)
-
-    
-
-    
 
     # affichage titre histogramme
     st.markdown(
@@ -520,39 +571,50 @@ def busTramSimultane(data_in, selected_date):
     st.pyplot(fig)
     return 0
 
+
 def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
     print("\nAffichage fiche horaire à un arrêt en particulier :")
     result = data_in
-    
+
     result = result.rename(columns={"arrival_time": "arrival_time_reel"})
     result = result.rename(columns={"departure_time": "departure_time_reel"})
 
     # Filtrage du stop choisi
     result = result[result["stop_id"].astype(str) == str(stopId)]
 
-    result = result.drop(columns=["stop_id","direction_id","arrival_delay","arrival_time_reel"])
+    result = result.drop(
+        columns=["stop_id", "direction_id", "arrival_delay", "arrival_time_reel"]
+    )
     if "schedule_relationship" in result.columns:
         # Supprimer la colonne "schedule_relationship"
         result = result.drop(columns=["schedule_relationship"])
-    
+
     # Modification avec le fuseau horaire CET
     for index, row in result.iterrows():
-        result.loc[index, "departure_time_reel"] = (original_timezone.localize(datetime.fromtimestamp(
-            row["departure_time_reel"]
-        ))).astimezone(cet_timezone)
-    
-    result['departure_time_reel'] = pd.to_datetime(result['departure_time_reel'])
+        result.loc[index, "departure_time_reel"] = (
+            original_timezone.localize(
+                datetime.fromtimestamp(row["departure_time_reel"])
+            )
+        ).astimezone(cet_timezone)
+
+    result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
     result = result.drop_duplicates(subset=["trip_id"])
     result = result.drop(columns=["trip_id"])
-    
+
     # Création d'un DataFrame pour les minutes de passage
-    minutes_data = pd.DataFrame({
-        'Heures': result['departure_time_reel'].dt.hour,
-        'Minutes': result['departure_time_reel'].dt.minute
-    })
-    minutes_data=minutes_data.drop_duplicates(subset=["Heures","Minutes"])
+    minutes_data = pd.DataFrame(
+        {
+            "Heures": result["departure_time_reel"].dt.hour,
+            "Minutes": result["departure_time_reel"].dt.minute,
+        }
+    )
+    minutes_data = minutes_data.drop_duplicates(subset=["Heures", "Minutes"])
     # Création d'un tableau avec les minutes de passage séparées par des virgules
-    minutes_table = minutes_data.groupby('Heures')['Minutes'].apply(lambda x: ', '.join(x.astype(str))).reset_index()
+    minutes_table = (
+        minutes_data.groupby("Heures")["Minutes"]
+        .apply(lambda x: ", ".join(x.astype(str)))
+        .reset_index()
+    )
 
     # Affichage du DataFrame dans Streamlit
     st.markdown(
@@ -560,10 +622,10 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
         unsafe_allow_html=True,
     )
     st.dataframe(minutes_table, hide_index=True)
-    
+
     # Création du graphique d'histogramme pour la fréquence de passage par heure
     fig_freq, ax_freq = plt.subplots()
-    ax_freq.hist(minutes_data['Heures'], bins=range(24), align="left", rwidth=0.8)
+    ax_freq.hist(minutes_data["Heures"], bins=range(24), align="left", rwidth=0.8)
     ax_freq.set_xticks(range(24))
     ax_freq.set_xlabel("Heures de la journée")
     ax_freq.set_ylabel("Fréquence de passage")
@@ -572,6 +634,7 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
     # Affichage du graphique d'histogramme dans Streamlit
     st.pyplot(fig_freq)
     return 0
+
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Fin fonctions, passage section Menu
@@ -583,17 +646,31 @@ if __name__ == "__main__":
     st.sidebar.title("Menu")
 
     trips = pd.read_csv(f"{nom_GTFS}//trips.txt", delimiter=",")
-    
+
     stopRoute = pd.merge(stops, stop_times, on="stop_id", how="inner")
     stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
     stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
-    stopRoute = stopRoute.drop(columns=[ 'stop_lat', 'stop_lon',
-       'wheelchair_boarding', 'arrival_time', 'departure_time',
-       'stop_sequence', ' pickup_type', 'drop_off_type', 
-       'service_id', 'shape_id', 'trip_headsign', 'trip_short_name',
-       'agency_id', 'route_short_name', 'trip_id'])
-    stopRoute=stopRoute.drop_duplicates(subset="stop_id")
-    stopRoute=stopRoute.sort_values(by="route_id")
+    stopRoute = stopRoute.drop(
+        columns=[
+            "stop_lat",
+            "stop_lon",
+            "wheelchair_boarding",
+            "arrival_time",
+            "departure_time",
+            "stop_sequence",
+            " pickup_type",
+            "drop_off_type",
+            "service_id",
+            "shape_id",
+            "trip_headsign",
+            "trip_short_name",
+            "agency_id",
+            "route_short_name",
+            "trip_id",
+        ]
+    )
+    stopRoute = stopRoute.drop_duplicates(subset="stop_id")
+    stopRoute = stopRoute.sort_values(by="route_id")
 
     print(stopRoute.columns)
     print(stopRoute)
@@ -614,13 +691,13 @@ if __name__ == "__main__":
 
     if fonctionnalite == "Accueil":
         st.header("Bienvenue sur l'Application Divia PFE")
-        #st.image("lien_image.jpg", caption="Logo de l'application")
+        # st.image("lien_image.jpg", caption="Logo de l'application")
 
         st.markdown(
             "Ce projet a été réalisé dans le cadre du projet de fin d'étude d'un étudiant en 5ème année d'ingénieur, Luke Develay de l'école ESIREM, et a été supervisé par Mr. Antoine Augusti. "
             "Ce projet se concentre sur l'analyse de données du réseau Divia à Dijon."
         )
-        
+
         st.markdown("### Informations Techniques:")
         st.markdown(
             "Le code source de ce projet est disponible sur GitHub. Vous pouvez le trouver dans le répertoire : [GitHub-Divia-PFE-Augusti-Develay](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay)"
@@ -637,7 +714,7 @@ if __name__ == "__main__":
             "L'application permet de parcourir les données récupérées et les présente à travers différentes fonctionnalités. "
             "Vous pouvez utiliser un Date Picker pour choisir la date de recherche, ainsi que des listes déroulantes pour sélectionner un arrêt ou une ligne (bus, tramway)."
         )
-        
+
         st.markdown(
             "N'hésitez pas à explorer les différentes fonctionnalités pour découvrir les analyses et les visualisations proposées."
         )
@@ -655,15 +732,21 @@ if __name__ == "__main__":
         nom_dataframe = f"datas_{date_str}"
 
         if nom_dataframe in globals():
-            st.markdown(f"Journée du {selected_date.strftime('%Y-%m-%d')}")
+            st.markdown(f"### Journée du {selected_date.strftime('%Y-%m-%d')}")
             departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         # Informations de cette fonctionnalité
         with st.expander("Informations"):
-            st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur tous leurs arrêts confondus.")
-            st.markdown("Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = \"Nuit\", [07h - 12h] = \"Matin\", [12h - 18h] = \"Après Midi\", [18h - 00h] = \"Soir\".")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)")
+            st.markdown(
+                "Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur tous leurs arrêts confondus."
+            )
+            st.markdown(
+                'Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = "Nuit", [07h - 12h] = "Matin", [12h - 18h] = "Après Midi", [18h - 00h] = "Soir".'
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)"
+            )
     elif fonctionnalite == "Graphique Arrêts par route":
         # date picker
         selected_date = st.sidebar.date_input(
@@ -671,15 +754,22 @@ if __name__ == "__main__":
         )
         date_str = selected_date.strftime("%Y_%m_%d")
         nom_dataframe = f"datas_{date_str}"
-        
+
         if nom_dataframe in globals():
             # ligne de trajet picker
             choix_routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
+                "Sélectionne une Ligne Divia",
+                [
+                    f"{route_id.replace('4-', '')} - {route_name}"
+                    for route_name, route_id in zip(
+                        stopRoute["route_long_name"].unique(),
+                        stopRoute["route_id"].unique(),
+                    )
+                ],
             )
-            numero_ligne = ligne_trajet.split('-')[0].strip()
-            ligne_trajet = ligne_trajet.split('-')[1].strip()
+            numero_ligne = ligne_trajet.split("-")[0].strip()
+            ligne_trajet = ligne_trajet.split("-")[1].strip()
             index = choix_routes[choix_routes["route_long_name"] == ligne_trajet].index[
                 0
             ]
@@ -690,8 +780,12 @@ if __name__ == "__main__":
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         # Informations de cette fonctionnalité
         with st.expander("Informations"):
-            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique).")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L120)")
+            st.markdown(
+                "Après avoir sélectionné une ligne de bus ou de tramway dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique)."
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L120)"
+            )
     elif fonctionnalite == "Graphique Arrêts par Stop":
         # date picker
         selected_date = st.sidebar.date_input(
@@ -699,27 +793,37 @@ if __name__ == "__main__":
         )
         date_str = selected_date.strftime("%Y_%m_%d")
         nom_dataframe = f"datas_{date_str}"
-        
+
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
+                "Sélectionne une Ligne Divia",
+                [
+                    f"{route_id.replace('4-', '')} - {route_name}"
+                    for route_name, route_id in zip(
+                        stopRoute["route_long_name"].unique(),
+                        stopRoute["route_id"].unique(),
+                    )
+                ],
             )
-            numero_ligne = ligne_trajet.split('-')[0].strip()
-            ligne_trajet = ligne_trajet.split('-')[1].strip()
-            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
-                0
-            ]
+            numero_ligne = ligne_trajet.split("-")[0].strip()
+            ligne_trajet = ligne_trajet.split("-")[1].strip()
+            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[0]
             selected_id = stopRoute.loc[index, "route_id"]
 
-            
             newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
-            newStopRoute=newStopRoute.sort_values(by="stop_name")
+            newStopRoute = newStopRoute.sort_values(by="stop_name")
             stop_choix = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", [f"{stop_name} - {stop_code}" for stop_name, stop_code in zip(newStopRoute['stop_name'], newStopRoute['stop_code'])]
+                "Sélectionne un arrêt Divia",
+                [
+                    f"{stop_name} - {stop_code}"
+                    for stop_name, stop_code in zip(
+                        newStopRoute["stop_name"], newStopRoute["stop_code"]
+                    )
+                ],
             )
-            stop_choix = stop_choix.split('-')[0].strip()
+            stop_choix = stop_choix.split("-")[0].strip()
 
             print(stop_choix)
             index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
@@ -731,8 +835,12 @@ if __name__ == "__main__":
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         with st.expander("Informations"):
-            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway, ainsi qu'un arrêt particulier dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique).")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L216)")
+            st.markdown(
+                "Après avoir sélectionné une ligne de bus ou de tramway, ainsi qu'un arrêt particulier dans le menu gauche de l'application, cette fonctionnalité affiche un graphique permettant de visualiser les arrêts prévus dans les fichiers GTFS de Divia (représentés en bleu sur le graphique) par rapport aux arrêts réellement effectués (représentés en orange sur le graphique)."
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L216)"
+            )
     elif fonctionnalite == "Temps d'attente":
         # date picker
         selected_date = st.sidebar.date_input(
@@ -740,27 +848,37 @@ if __name__ == "__main__":
         )
         date_str = selected_date.strftime("%Y_%m_%d")
         nom_dataframe = f"datas_{date_str}"
-        
+
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
+                "Sélectionne une Ligne Divia",
+                [
+                    f"{route_id.replace('4-', '')} - {route_name}"
+                    for route_name, route_id in zip(
+                        stopRoute["route_long_name"].unique(),
+                        stopRoute["route_id"].unique(),
+                    )
+                ],
             )
-            numero_ligne = ligne_trajet.split('-')[0].strip()
-            ligne_trajet = ligne_trajet.split('-')[1].strip()
-            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
-                0
-            ]
+            numero_ligne = ligne_trajet.split("-")[0].strip()
+            ligne_trajet = ligne_trajet.split("-")[1].strip()
+            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[0]
             selected_id = stopRoute.loc[index, "route_id"]
 
-            
             newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
-            newStopRoute=newStopRoute.sort_values(by="stop_name")
+            newStopRoute = newStopRoute.sort_values(by="stop_name")
             stop_choix = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", [f"{stop_name} - {stop_code}" for stop_name, stop_code in zip(newStopRoute['stop_name'], newStopRoute['stop_code'])]
+                "Sélectionne un arrêt Divia",
+                [
+                    f"{stop_name} - {stop_code}"
+                    for stop_name, stop_code in zip(
+                        newStopRoute["stop_name"], newStopRoute["stop_code"]
+                    )
+                ],
             )
-            stop_choix = stop_choix.split('-')[0].strip()
+            stop_choix = stop_choix.split("-")[0].strip()
 
             print(stop_choix)
             index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
@@ -772,8 +890,12 @@ if __name__ == "__main__":
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         with st.expander("Informations"):
-            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application, une troisième liste déroulante permet de choisir la méthode de calcul, que ce soit le temps d'attente moyen ou le temps d'attente maximal. Ensuite, un graphique affiche les temps d'attente par tranches horaires, que ce soit pour la moyenne ou le maximum.")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L311)")
+            st.markdown(
+                "Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application, une troisième liste déroulante permet de choisir la méthode de calcul, que ce soit le temps d'attente moyen ou le temps d'attente maximal. Ensuite, un graphique affiche les temps d'attente par tranches horaires, que ce soit pour la moyenne ou le maximum."
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L311)"
+            )
     elif fonctionnalite == "Nombre trajets par tranche horaire":
         # date picker
         selected_date = st.sidebar.date_input(
@@ -781,14 +903,18 @@ if __name__ == "__main__":
         )
         date_str = selected_date.strftime("%Y_%m_%d")
         nom_dataframe = f"datas_{date_str}"
-        
+
         if nom_dataframe in globals():
             busTramSimultane(globals()[nom_dataframe], selected_date)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         with st.expander("Informations"):
-            st.markdown("Pour une date sélectionnée, un graphique affiche, par tranche horaire, le nombre de trajets (Bus ou Tramway) distincts, identifiés par leur `trip_id`.")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L433)")
+            st.markdown(
+                "Pour une date sélectionnée, un graphique affiche, par tranche horaire, le nombre de trajets (Bus ou Tramway) distincts, identifiés par leur `trip_id`."
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L433)"
+            )
     elif fonctionnalite == "Fiche Horaire par arrêt":
         # date picker
         selected_date = st.sidebar.date_input(
@@ -796,27 +922,37 @@ if __name__ == "__main__":
         )
         date_str = selected_date.strftime("%Y_%m_%d")
         nom_dataframe = f"datas_{date_str}"
-        
+
         if nom_dataframe in globals():
             # stop (arrêt) picker
             choix_stop = pd.read_csv(f"{nom_GTFS}/stops.txt", delimiter=",")
             ligne_trajet = st.sidebar.selectbox(
-                "Sélectionne une Ligne Divia", [f"{route_id.replace('4-', '')} - {route_name}" for route_name, route_id in zip(stopRoute['route_long_name'].unique(), stopRoute['route_id'].unique())]
+                "Sélectionne une Ligne Divia",
+                [
+                    f"{route_id.replace('4-', '')} - {route_name}"
+                    for route_name, route_id in zip(
+                        stopRoute["route_long_name"].unique(),
+                        stopRoute["route_id"].unique(),
+                    )
+                ],
             )
-            numero_ligne = ligne_trajet.split('-')[0].strip()
-            ligne_trajet = ligne_trajet.split('-')[1].strip()
-            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[
-                0
-            ]
+            numero_ligne = ligne_trajet.split("-")[0].strip()
+            ligne_trajet = ligne_trajet.split("-")[1].strip()
+            index = stopRoute[stopRoute["route_long_name"] == ligne_trajet].index[0]
             selected_id = stopRoute.loc[index, "route_id"]
 
-            
             newStopRoute = stopRoute[stopRoute["route_id"] == selected_id]
-            newStopRoute=newStopRoute.sort_values(by="stop_name")
+            newStopRoute = newStopRoute.sort_values(by="stop_name")
             stop_choix = st.sidebar.selectbox(
-                "Sélectionne un arrêt Divia", [f"{stop_name} - {stop_code}" for stop_name, stop_code in zip(newStopRoute['stop_name'], newStopRoute['stop_code'])]
+                "Sélectionne un arrêt Divia",
+                [
+                    f"{stop_name} - {stop_code}"
+                    for stop_name, stop_code in zip(
+                        newStopRoute["stop_name"], newStopRoute["stop_code"]
+                    )
+                ],
             )
-            stop_choix = stop_choix.split('-')[0].strip()
+            stop_choix = stop_choix.split("-")[0].strip()
 
             print(stop_choix)
             index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
@@ -828,24 +964,40 @@ if __name__ == "__main__":
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         with st.expander("Informations"):
-            st.markdown("Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée, ainsi qu'un graphique permettant de voir la fréquence de passage sur chaque tranche horaire.")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L502)")
-    
-    elif fonctionnalite == "Tendance hebdomadaire : Ligne avec moyenne de départ en avance":
+            st.markdown(
+                "Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée, ainsi qu'un graphique permettant de voir la fréquence de passage sur chaque tranche horaire."
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L502)"
+            )
+
+    elif (
+        fonctionnalite
+        == "Tendance hebdomadaire : Ligne avec moyenne de départ en avance"
+    ):
         dataframes_list = []
         for i in range(1, 8):  # Commencer depuis hier, jusqu'à 1 semaine passée
             date = datetime.now() - timedelta(days=i)
             date_str = date.strftime("%Y_%m_%d")
             nom_dataframe = f"datas_{date_str}"
-            df_jour = globals()[nom_dataframe] # Code pour récupérer le DataFrame du jour date
+            df_jour = globals()[
+                nom_dataframe
+            ]  # Code pour récupérer le DataFrame du jour date
             dataframes_list.append(df_jour)
 
-
         df_7lastday = pd.concat(dataframes_list, ignore_index=True)
-        st.markdown(f"Donnée du {(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')} au {(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')}")
+        st.markdown(
+            f"### Données du {(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')} au {(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')}"
+        )
         departEnAvance(routeParTripParJour(df_7lastday))
         # Informations de cette fonctionnalité
         with st.expander("Informations"):
-            st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur les 7 derniers jours, sur tous leurs arrêts confondus.")
-            st.markdown("Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = \"Nuit\", [07h - 12h] = \"Matin\", [12h - 18h] = \"Après Midi\", [18h - 00h] = \"Soir\".")
-            st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)")
+            st.markdown(
+                "Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur les 7 derniers jours, sur tous leurs arrêts confondus."
+            )
+            st.markdown(
+                'Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = "Nuit", [07h - 12h] = "Matin", [12h - 18h] = "Après Midi", [18h - 00h] = "Soir".'
+            )
+            st.markdown(
+                "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)"
+            )
