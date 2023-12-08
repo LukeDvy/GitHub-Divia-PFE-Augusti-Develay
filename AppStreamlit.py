@@ -125,7 +125,7 @@ def departEnAvance(data1):
     print("\nFonction énumérant les lignes parties en avances :")
     df_final = pd.DataFrame(columns=data1.data.columns)
     for index, row in data1.data.iterrows():
-        if row["departure_delay_mean"] < 15:  # marge de 15 secondes de retard acceptée
+        if row["departure_delay_mean"] < -15:  # marge de 15 secondes de retard acceptée
             df_final.loc[index] = row
             st.markdown(
                 str(row["periode_journee"])
