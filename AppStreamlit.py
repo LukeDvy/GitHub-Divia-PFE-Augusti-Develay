@@ -123,9 +123,7 @@ def departEnAvance(data1):
             df_final.loc[index] = row
             st.markdown(
                 str(row["periode_journee"])
-                + " du "
-                + data1.date
-                + " le trajet "
+                + " sur le trajet "
                 + str(row["route_long_name"])
                 + " en "
                 + str(row["route_type"])
@@ -657,6 +655,7 @@ if __name__ == "__main__":
         nom_dataframe = f"datas_{date_str}"
 
         if nom_dataframe in globals():
+            st.markdown(f"Journée du {selected_date.strftime('%Y-%m-%d')}")
             departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
@@ -843,9 +842,10 @@ if __name__ == "__main__":
 
 
         df_7lastday = pd.concat(dataframes_list, ignore_index=True)
+        st.markdown(f"Donnée du {(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')} au {(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')}")
         departEnAvance(routeParTripParJour(df_7lastday))
         # Informations de cette fonctionnalité
         with st.expander("Informations"):
-            st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur tous leurs arrêts confondus.")
+            st.markdown("Cette fonctionnalité affiche les lignes (Bus et Tramway) avec une moyenne de départ en avance, sur les 7 derniers jours, sur tous leurs arrêts confondus.")
             st.markdown("Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = \"Nuit\", [07h - 12h] = \"Matin\", [12h - 18h] = \"Après Midi\", [18h - 00h] = \"Soir\".")
             st.markdown("Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)")
