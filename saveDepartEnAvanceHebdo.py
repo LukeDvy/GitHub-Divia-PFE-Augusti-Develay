@@ -9,7 +9,7 @@ nom_GTFS = "GTFS_2023_11_07"
 # Chargement des fichiers GTFS dans des df
 routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")
 
-fichiers_csv = os.listdir("Trip_By_Day")
+fichiers_csv = os.listdir("/root/SaveAllDay/Trip_By_Day")
 for fichier_csv in fichiers_csv:
     # garde que la date du nom du fichier
     date_str = fichier_csv.split(".")[0].replace("-", "_")
@@ -17,7 +17,7 @@ for fichier_csv in fichiers_csv:
     nom_dataframe = f"datas_{date_str}"
     # création d'un dataframe par fichier csv
     globals()[nom_dataframe] = pd.read_csv(
-        os.path.join("Trip_By_Day", fichier_csv), delimiter=","
+        os.path.join("/root/SaveAllDay/Trip_By_Day", fichier_csv), delimiter=","
     )
 
 original_timezone = pytz.timezone("UTC")

@@ -1028,5 +1028,8 @@ if __name__ == "__main__":
                 'Les périodes de la journée sont déterminées de cette manière : [00h - 7h] = "Nuit", [07h - 12h] = "Matin", [12h - 18h] = "Après Midi", [18h - 00h] = "Soir".'
             )
             st.markdown(
+                "Pour accélérer le calcul, une analyse quotidienne des sept fichiers les plus récents est effectuée à 0h10."
+            )
+            st.markdown(
                 "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)"
             )
