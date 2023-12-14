@@ -123,8 +123,8 @@ def routeParTripParJour(data_in):
 # fonction renvoyant toutes les lignes avec une moyenne de départ en avance au dessus de la normale
 def departEnAvance(data1):
     print("\nFonction énumérant les lignes parties en avances :")
-    df_final = pd.DataFrame(columns=data1.data.columns)
-    for index, row in data1.data.iterrows():
+    df_final = pd.DataFrame(columns=data1.columns)
+    for index, row in data1.iterrows():
         if row["departure_delay_mean"] < -15:  # marge de 15 secondes de retard acceptée
             df_final.loc[index] = row
             st.markdown(
@@ -759,7 +759,7 @@ if __name__ == "__main__":
 
         if nom_dataframe in globals():
             st.markdown(f"### Journée du {selected_date.strftime('%Y-%m-%d')}")
-            departEnAvance(routeParTripParJour(globals()[nom_dataframe]))
+            departEnAvance(routeParTripParJour(globals()[nom_dataframe]).data)
         else:
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         # Informations de cette fonctionnalité
@@ -1001,7 +1001,6 @@ if __name__ == "__main__":
         fonctionnalite
         == "Tendance hebdomadaire : Ligne avec moyenne de départ en avance"
     ):
-        dataframes_list = []
         for i in range(1, 8):  # Commencer depuis hier, jusqu'à 1 semaine passée
             date = datetime.now() - timedelta(days=i)
             date_str = date.strftime("%Y_%m_%d")
@@ -1009,19 +1008,17 @@ if __name__ == "__main__":
             try:
                 df_jour = globals()[
                     nom_dataframe
-                ]  # Code pour récupérer le DataFrame du jour date
-                dataframes_list.append(df_jour)
+                ]
             except:
                 st.markdown(
                     f"Données absentes pour la journée du {date_str}"
                 )
-                print(f"Fichier csv non disponible pour la date suivante : {date_str}")
 
-        df_7lastday = pd.concat(dataframes_list, ignore_index=True)
         st.markdown(
             f"### Données du {(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')} au {(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')}"
         )
-        departEnAvance(routeParTripParJour(df_7lastday))
+        dfDepartEnAvanceHebd = pd.read_csv(f"SauvegardeHebdomadaire/departEnAvanceHebdo.csv", delimiter=",")
+        departEnAvance(dfDepartEnAvanceHebd)
         # Informations de cette fonctionnalité
         with st.expander("Informations"):
             st.markdown(
