@@ -599,7 +599,8 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
     result = result.drop_duplicates(subset=["trip_id"])
-    result = result.drop(columns=["trip_id"])
+    print("haha")
+    print(result["trip_id"])
 
     # Création d'un DataFrame pour les minutes de passage
     minutes_data = pd.DataFrame(
@@ -633,6 +634,31 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     # Affichage du graphique d'histogramme dans Streamlit
     st.pyplot(fig_freq)
+
+
+
+
+
+    #_________VERIF 
+    stoptime = pd.read_csv(f"{nom_GTFS}//stop_times.txt", delimiter=",")
+    stoptime = stoptime[stoptime["stop_id"].astype(str) == str(stopId)]
+
+    triptxt = pd.read_csv(f"{nom_GTFS}//trips.txt", delimiter=",")
+    calendardates = pd.read_csv(f"{nom_GTFS}//calendar_dates.txt", delimiter=",")
+    calendardates = calendardates[calendardates["date"].astype(str) == str(selected_date).replace("-","")]
+
+    final = pd.merge(calendardates, triptxt, on="service_id", how="inner")
+    final = pd.merge(final, stoptime, on="trip_id", how="inner")
+    print("HIHI")
+    print(final["trip_id"])
+
+    final['trip_id'] = final['trip_id'].apply(lambda x: x[2:])
+    result['trip_id'] = result['trip_id'].apply(lambda x: x[2:])
+
+    merged=pd.merge(final["trip_id"], result["trip_id"], on="trip_id", how="outer",indicator=True)
+    merged_dif = merged.loc[merged['_merge'] != 'both']
+    print(merged_dif)
+
     return 0
 
 
@@ -980,10 +1006,16 @@ if __name__ == "__main__":
             date = datetime.now() - timedelta(days=i)
             date_str = date.strftime("%Y_%m_%d")
             nom_dataframe = f"datas_{date_str}"
-            df_jour = globals()[
-                nom_dataframe
-            ]  # Code pour récupérer le DataFrame du jour date
-            dataframes_list.append(df_jour)
+            try:
+                df_jour = globals()[
+                    nom_dataframe
+                ]  # Code pour récupérer le DataFrame du jour date
+                dataframes_list.append(df_jour)
+            except:
+                st.markdown(
+                    f"Données absentes pour la journée du {date_str}"
+                )
+                print(f"Fichier csv non disponible pour la date suivante : {date_str}")
 
         df_7lastday = pd.concat(dataframes_list, ignore_index=True)
         st.markdown(
