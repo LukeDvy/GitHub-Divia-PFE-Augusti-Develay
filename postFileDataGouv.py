@@ -1,8 +1,9 @@
 import requests
 from datetime import datetime, timedelta
+import os
 
 API = 'https://www.data.gouv.fr/api/1'
-API_KEY = 'eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyIjoiNjU2OWQ0N2I1ZGI0ZjdlM2Y3MzI1ZDM0IiwidGltZSI6MTcwMTk0MjA5Mi44ODYyNzM5fQ.EQdaM9K577gPRSboH22ThQRBexlF9Y_z5-4h1yiuspQV93mIJW3szDX1wtxdEiYrTQtD9TADLRKRcHwbrVnBBg'
+API_KEY = os.environ.get("API_KEY_DATA_GOUV")
 DATASET = '6569d5e36408e968a823feb4'
 HEADERS = {
     'X-API-KEY': API_KEY,
