@@ -1,14 +1,17 @@
 import requests
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
+
+load_dotenv('/root/.env')
 
 API = 'https://www.data.gouv.fr/api/1'
-API_KEY = os.environ.get("API_KEY_DATA_GOUV")
+API_KEY = os.getenv("API_KEY_DATA_GOUV")
 DATASET = '6569d5e36408e968a823feb4'
 HEADERS = {
     'X-API-KEY': API_KEY,
 }
-
+print(API_KEY)
 
 def api_url(path):
     return f"{API}{path}"
