@@ -581,6 +581,21 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     # Filtrage du stop choisi
     result = result[result["stop_id"].astype(str) == str(stopId)]
+    print(result["trip_id"])
+
+
+    result["trip_id"] = result["trip_id"].astype(str)
+    # result =  result[result["trip_id"].str.contains(numero_ligne)] # pour les stop_id (arrêts) utilisées pour deux lignes différentes (exemple : Darcy utilisé pour T1 et T2)
+    #result =  result[result["trip_id"].str.split("-")[1].strip() == numero_ligne] # pour les stop_id (arrêts) utilisées pour deux lignes différentes (exemple : Darcy utilisé pour T1 et T2)
+
+    result["trip_id_partie"] = result["trip_id"].apply(lambda x: str(x).split("-")[1].strip() if "-" in str(x) else None)
+    # Filtrez maintenant en utilisant la nouvelle colonne créée
+    result = result[result["trip_id_partie"] == numero_ligne]
+    # Supprimez la colonne temporaire si nécessaire
+    result = result.drop(columns=["trip_id_partie"])
+    
+
+
     
     print(result)
 
@@ -602,7 +617,7 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
     result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
     result = result.drop_duplicates(subset=["trip_id"])
     print("REEL")
-    print(result)
+    print(result["trip_id"])
 
     # Création d'un DataFrame pour les minutes de passage
     minutes_data = pd.DataFrame(
