@@ -1,14 +1,5 @@
 # ignorer tous les dossiers /GTFS
 /GTFS*/*.txt
-/GTFS/agency.txt
-/GTFS/calendar_dates.txt
-/GTFS/calendar.txt
-/GTFS/routes.txt
-/GTFS/shapes.txt
-/GTFS/stop_name.txt
-/GTFS/stop_times.txt
-/GTFS/stops.txt
-/GTFS/trips.txt
 
 # ignorer tous les fichiers GTFS-RT /Trip_By_Day
 /Trip_By_Day/*.csv
