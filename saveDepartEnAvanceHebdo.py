@@ -4,7 +4,7 @@ import numpy as np
 import os
 import pytz
 
-nom_GTFS = "GTFS_2023_11_07"
+nom_GTFS = "/root/GitHub-Divia-PFE-Augusti-Develay/GTFS_2023_11_07"
 
 # Chargement des fichiers GTFS dans des df
 routes = pd.read_csv(f"{nom_GTFS}/routes.txt", delimiter=",")

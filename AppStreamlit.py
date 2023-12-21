@@ -581,9 +581,11 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     # Filtrage du stop choisi
     result = result[result["stop_id"].astype(str) == str(stopId)]
+    
+    print(result)
 
     result = result.drop(
-        columns=["stop_id", "direction_id", "arrival_delay", "arrival_time_reel"]
+        columns=["stop_id", "direction_id", "arrival_delay"]
     )
     if "schedule_relationship" in result.columns:
         # Supprimer la colonne "schedule_relationship"
@@ -599,8 +601,8 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     result["departure_time_reel"] = pd.to_datetime(result["departure_time_reel"])
     result = result.drop_duplicates(subset=["trip_id"])
-    print("haha")
-    print(result["trip_id"])
+    print("REEL")
+    print(result)
 
     # Création d'un DataFrame pour les minutes de passage
     minutes_data = pd.DataFrame(
@@ -645,12 +647,13 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     triptxt = pd.read_csv(f"{nom_GTFS}//trips.txt", delimiter=",")
     calendardates = pd.read_csv(f"{nom_GTFS}//calendar_dates.txt", delimiter=",")
+    print(selected_date)
     calendardates = calendardates[calendardates["date"].astype(str) == str(selected_date).replace("-","")]
 
     final = pd.merge(calendardates, triptxt, on="service_id", how="inner")
     final = pd.merge(final, stoptime, on="trip_id", how="inner")
-    print("HIHI")
-    print(final["trip_id"])
+    print("PREVU")
+    print(final["date"])
 
     final['trip_id'] = final['trip_id'].apply(lambda x: x[2:])
     result['trip_id'] = result['trip_id'].apply(lambda x: x[2:])
@@ -849,10 +852,11 @@ if __name__ == "__main__":
                     )
                 ],
             )
-            stop_choix = stop_choix.split("-")[0].strip()
+            stop_choix = stop_choix.split(" - ")[1].strip()
 
             print(stop_choix)
-            index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
+            print(choix_stop)
+            index = choix_stop[choix_stop["stop_id"] == f"4-{stop_choix}"].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             graphJourneeByRouteAndStop(
@@ -904,10 +908,11 @@ if __name__ == "__main__":
                     )
                 ],
             )
-            stop_choix = stop_choix.split("-")[0].strip()
+            stop_choix = stop_choix.split(" - ")[1].strip()
 
             print(stop_choix)
-            index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
+            print(choix_stop)
+            index = choix_stop[choix_stop["stop_id"] == f"4-{stop_choix}"].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             tpsAttente(
@@ -978,10 +983,11 @@ if __name__ == "__main__":
                     )
                 ],
             )
-            stop_choix = stop_choix.split("-")[0].strip()
+            stop_choix = stop_choix.split(" - ")[1].strip()
 
             print(stop_choix)
-            index = choix_stop[choix_stop["stop_name"] == stop_choix].index[0]
+            print(choix_stop)
+            index = choix_stop[choix_stop["stop_id"] == f"4-{stop_choix}"].index[0]
             selected_id = choix_stop.loc[index, "stop_id"]
 
             ficheHoraire(
