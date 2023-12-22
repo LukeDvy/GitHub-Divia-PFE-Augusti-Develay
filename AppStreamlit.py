@@ -259,6 +259,14 @@ def graphJourneeByRouteAndStop(stopId: str, data_in, selected_date, numero_ligne
     # result = result[result["direction_id"] == directionId]
     result = result[result["stop_id"] == stopId]
 
+    # permet de regler le probleme d'arrets derservant plusieurs lignes (ex : Darcy)
+    result["trip_id"] = result["trip_id"].astype(str)
+    result["trip_id_partie"] = result["trip_id"].apply(lambda x: str(x).split("-")[1].strip() if "-" in str(x) else None)
+    # Filtrez maintenant en utilisant la nouvelle colonne créée
+    result = result[result["trip_id_partie"] == numero_ligne]
+    # Supprimez la colonne temporaire si nécessaire
+    result = result.drop(columns=["trip_id_partie"])
+
     # Ajout des colonnes "arrival_time" et "departure_time", afin de comparer les horaires réélles et prévues
     result = pd.merge(
         result, stop_times, on=["trip_id", "stop_id"], how="inner"
@@ -351,6 +359,7 @@ def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
     stopRoute = pd.merge(stopRoute, trips, on="trip_id", how="inner")
     stopRoute = pd.merge(stopRoute, routes, on="route_id", how="inner")
     stopRoute = stopRoute[stopRoute["stop_id"] == stopId]
+    
     stopRoute = stopRoute.drop(
         columns=[
             "stop_code",
@@ -377,6 +386,15 @@ def tpsAttente(stopId: str, data_in, selected_date, numero_ligne):
     result = result.rename(columns={"departure_time": "departure_time_reel"})
 
     result = result[result["stop_id"] == stopId]
+
+    # permet de regler le probleme d'arrets derservant plusieurs lignes (ex : Darcy)
+    result["trip_id"] = result["trip_id"].astype(str)
+    result["trip_id_partie"] = result["trip_id"].apply(lambda x: str(x).split("-")[1].strip() if "-" in str(x) else None)
+    # Filtrez maintenant en utilisant la nouvelle colonne créée
+    result = result[result["trip_id_partie"] == numero_ligne]
+    # Supprimez la colonne temporaire si nécessaire
+    result = result.drop(columns=["trip_id_partie"])
+
     result = result.drop(
         columns=[
             "trip_id",
