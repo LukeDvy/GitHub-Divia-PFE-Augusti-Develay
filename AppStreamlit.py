@@ -599,23 +599,15 @@ def ficheHoraire(stopId: str, data_in, selected_date, numero_ligne):
 
     # Filtrage du stop choisi
     result = result[result["stop_id"].astype(str) == str(stopId)]
-    print(result["trip_id"])
 
-
+    # permet de regler le probleme d'arrets derservant plusieurs lignes (ex : Darcy)
     result["trip_id"] = result["trip_id"].astype(str)
-    # result =  result[result["trip_id"].str.contains(numero_ligne)] # pour les stop_id (arrêts) utilisées pour deux lignes différentes (exemple : Darcy utilisé pour T1 et T2)
-    #result =  result[result["trip_id"].str.split("-")[1].strip() == numero_ligne] # pour les stop_id (arrêts) utilisées pour deux lignes différentes (exemple : Darcy utilisé pour T1 et T2)
-
     result["trip_id_partie"] = result["trip_id"].apply(lambda x: str(x).split("-")[1].strip() if "-" in str(x) else None)
     # Filtrez maintenant en utilisant la nouvelle colonne créée
     result = result[result["trip_id_partie"] == numero_ligne]
     # Supprimez la colonne temporaire si nécessaire
     result = result.drop(columns=["trip_id_partie"])
     
-
-
-    
-    print(result)
 
     result = result.drop(
         columns=["stop_id", "direction_id", "arrival_delay"]
@@ -742,11 +734,11 @@ if __name__ == "__main__":
         [
             "Accueil",
             "Ligne avec moyenne de départ en avance",
-            "Graphique Arrêts par route",
-            "Graphique Arrêts par Stop",
+            "Graphique de passage par route",
+            "Graphique de passage par arrêt",
             "Temps d'attente",
             "Nombre trajets par tranche horaire",
-            "Fiche Horaire par arrêt",
+            "Fiche horaire par arrêt",
             "Tendance hebdomadaire : Ligne avec moyenne de départ en avance",
         ],
     )
@@ -756,25 +748,25 @@ if __name__ == "__main__":
         # st.image("lien_image.jpg", caption="Logo de l'application")
 
         st.markdown(
-            "Ce projet a été réalisé dans le cadre du projet de fin d'étude d'un étudiant en 5ème année d'ingénieur, Luke Develay de l'école ESIREM, et a été supervisé par Mr. Antoine Augusti. "
+            "Ce projet a été réalisé dans le cadre du projet de fin d'étude d'un étudiant en 5ème année d'ingénieur, Luke Develay 👼 de l'école Polytech Dijon, et a été supervisé par M. Antoine Augusti 🧑‍⚕️. "
             "Ce projet se concentre sur l'analyse de données du réseau Divia à Dijon."
         )
 
-        st.markdown("### Informations Techniques:")
+        st.markdown("### Informations Techniques")
         st.markdown(
             "Le code source de ce projet est disponible sur GitHub. Vous pouvez le trouver dans le répertoire : [GitHub-Divia-PFE-Augusti-Develay](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay)"
         )
 
-        st.markdown("### Création des fichiers CSV par jour:")
+        st.markdown("### Création des fichiers CSV par jour")
         st.markdown(
             "Un fichier CSV est généré chaque jour grâce au script `SaveAllDay.py`. Ce fichier contient des colonnes importantes "
             "et est nommé selon le format AAAA-MM-JJ. Les données sont extraites toutes les deux minutes à partir de l'adresse : https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-rt-trip-update."
         )
 
-        st.markdown("### Fonctionnalités de l'Application:")
+        st.markdown("### Fonctionnalités de l'Application")
         st.markdown(
             "L'application permet de parcourir les données récupérées et les présente à travers différentes fonctionnalités. "
-            "Vous pouvez utiliser un Date Picker pour choisir la date de recherche, ainsi que des listes déroulantes pour sélectionner un arrêt ou une ligne (bus, tramway)."
+            "Vous avez la possibilité de choisir la date souhaitée. De plus, des menus déroulants sont disponibles pour vous permettre de choisir un arrêt spécifique ou une ligne de transport (bus, tramway)."
         )
 
         st.markdown(
@@ -809,7 +801,7 @@ if __name__ == "__main__":
             st.markdown(
                 "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L40)"
             )
-    elif fonctionnalite == "Graphique Arrêts par route":
+    elif fonctionnalite == "Graphique de passage par route":
         # date picker
         selected_date = st.sidebar.date_input(
             "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
@@ -848,7 +840,7 @@ if __name__ == "__main__":
             st.markdown(
                 "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L120)"
             )
-    elif fonctionnalite == "Graphique Arrêts par Stop":
+    elif fonctionnalite == "Graphique de passage par arrêt":
         # date picker
         selected_date = st.sidebar.date_input(
             "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
@@ -979,7 +971,7 @@ if __name__ == "__main__":
             st.markdown(
                 "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L433)"
             )
-    elif fonctionnalite == "Fiche Horaire par arrêt":
+    elif fonctionnalite == "Fiche horaire par arrêt":
         # date picker
         selected_date = st.sidebar.date_input(
             "Sélectionner une date", (datetime.now().date() - timedelta(days=1))
@@ -1030,7 +1022,7 @@ if __name__ == "__main__":
             st.warning(f"Aucun DataFrame trouvé pour la date {selected_date}")
         with st.expander("Informations"):
             st.markdown(
-                "Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est affiché pour la journée spécifiée, ainsi qu'un graphique permettant de voir la fréquence de passage sur chaque tranche horaire."
+                "Après avoir sélectionné une ligne de bus ou de tramway ainsi qu'un arrêt spécifique dans le menu de gauche de l'application. Une fiche horaire est présentée, basée sur les données collectées pour la journée indiquée, il ne s'agit donc pas des données théoriques. Il y a également un graphique qui présente la fréquence de passage pour chaque plage horaire."
             )
             st.markdown(
                 "Le détail du code est présent à ce lien : [Lien GitHub](https://github.com/LukeDvy/GitHub-Divia-PFE-Augusti-Develay/blob/main/AppStreamlit.py#L502)"
