@@ -70,6 +70,8 @@ def routeParTripParJour(data_in):
         ]
     )
 
+    result=result.dropna(subset=["arrival_time"])
+
     for index, row in result.iterrows():
         result.loc[index, "arrival_time"] = (
             original_timezone.localize(datetime.fromtimestamp(row["arrival_time"]))
