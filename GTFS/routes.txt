@@ -2,7 +2,7 @@ route_id,agency_id,route_short_name,route_long_name,route_type
 4-10,KD,10,TALANT Citadelle <> AHUY,3
 4-12,KD,12,PLOMBIERES <> P. de Colombiere,3
 4-13,KD,13,Motte Giron <> FONTAINE Village,3
-4-14,KD,14,MARSANNAY Charon <> Carraz,3
+4-14,KD,14,MARSANNAY Charon <> Charet,3
 4-15,KD,15,PERRIGNY <> Carraz,3
 4-16,KD,16,QUETIGNY AC <> NEUILLY-CRIMOLOIS,3
 4-18,KD,18,LONGVIC Carmelites <> Darcy,3
